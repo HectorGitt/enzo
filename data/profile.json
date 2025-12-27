@@ -1,0 +1,61 @@
+{
+  "id": "user-1",
+  "name": "Developer",
+  "email": "",
+  "bio": "Experienced Full Stack Engineer with a focus on modern web frameworks and performance optimization.",
+  "title": "Senior Full Stack Engineer",
+  "experience": [
+    {
+      "id": "990fa6d7-3a71-46d6-8e77-560ce12abd11",
+      "role": "Senior Software Engineer",
+      "company": "TechCorp Inc.",
+      "startDate": "2023-01",
+      "current": true,
+      "description": "Leading the frontend migration to Next.js and improving site performance by 40%.",
+      "wins": []
+    },
+    {
+      "id": "eaa3b390-44fa-484d-a5a4-d9f99cc64634",
+      "role": "Software Developer",
+      "company": "StartupXYZ",
+      "startDate": "2020-06",
+      "endDate": "2022-12",
+      "current": false,
+      "description": "Built the initial MVP using React and Node.js. Scaled to 10k users.",
+      "wins": []
+    }
+  ],
+  "education": [
+    {
+      "id": "08a84a57-52d1-4ea7-a182-d068ec945b1c",
+      "school": "University of Technology",
+      "degree": "B.S. Computer Science",
+      "graduationDate": "2020-05"
+    }
+  ],
+  "skills": [
+    {
+      "name": "React",
+      "level": 5,
+      "category": "frontend"
+    },
+    {
+      "name": "TypeScript",
+      "level": 4,
+      "category": "frontend"
+    },
+    {
+      "name": "Node.js",
+      "level": 4,
+      "category": "backend"
+    },
+    {
+      "name": "AWS",
+      "level": 3,
+      "category": "devops"
+    }
+  ],
+  "publications": [],
+  "speaking": [],
+  "wins": []
+}
