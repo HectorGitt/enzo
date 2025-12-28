@@ -34,6 +34,32 @@ export async function getProfile(email: string = "user@example.com"): Promise<Us
             }
         }
 
+        // Handle rawActivities from snake_case backend
+        // Handle rawActivities (which comes as camelCase key from backend dict, but snake_case fields from Pydantic)
+        if (data.rawActivities) {
+            data.rawActivities = data.rawActivities.map((ra: any) => ({
+                id: ra.id,
+                source: ra.source,
+                externalId: ra.external_id || ra.externalId,
+                title: ra.title,
+                content: ra.content,
+                metadataJson: ra.metadata_json || ra.metadataJson,
+                date: ra.date
+            }));
+        } else if (data.raw_activities) {
+            // Fallback if backend changes key
+            data.rawActivities = data.raw_activities.map((ra: any) => ({
+                id: ra.id,
+                source: ra.source,
+                externalId: ra.external_id || ra.externalId,
+                title: ra.title,
+                content: ra.content,
+                metadataJson: ra.metadata_json || ra.metadataJson,
+                date: ra.date
+            }));
+            delete data.raw_activities;
+        }
+
         return data;
     } catch (error) {
         console.error("Backend connection failed:", error);

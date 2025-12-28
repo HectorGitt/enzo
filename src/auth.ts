@@ -57,8 +57,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     callbacks: {
         async jwt({ token, account, profile, user }) {
+            // Initial sign in
             if (account) {
                 token.accessToken = account.access_token
+                token.refreshToken = account.refresh_token
+                token.expiresAt = account.expires_at
+                token.username = (profile as any)?.login
 
                 // Track connected provider
                 if (user?.email) {
@@ -75,15 +79,53 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                         console.error("Failed to sync provider connection:", e);
                     }
                 }
+                return token
             }
-            if (profile) {
-                token.username = (profile as any).login
+
+            // Return previous token if the access token has not expired yet
+            // GitHub tokens might not have expires_at if they are non-expiring
+            // If expiresAt is set, we check it.
+            if (!token.expiresAt || Date.now() < (token.expiresAt as number) * 1000) {
+                return token
             }
-            return token
+
+            // Access token has expired, try to update it
+            try {
+                // If using GitHub, we need to refresh
+                // Note: Only works if the App is configured to expire tokens and issuance of refresh tokens
+                if (!token.refreshToken) throw new Error("No refresh token available")
+
+                const response = await fetch("https://github.com/login/oauth/access_token", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "Accept": "application/json" },
+                    body: JSON.stringify({
+                        client_id: process.env.GITHUB_ID,
+                        client_secret: process.env.GITHUB_SECRET,
+                        grant_type: "refresh_token",
+                        refresh_token: token.refreshToken,
+                    }),
+                })
+
+                const tokens = await response.json()
+
+                if (!response.ok) throw tokens
+
+                return {
+                    ...token,
+                    accessToken: tokens.access_token,
+                    expiresAt: Math.floor(Date.now() / 1000 + tokens.expires_in),
+                    refreshToken: tokens.refresh_token ?? token.refreshToken, // Fallback to old refresh token
+                }
+            } catch (error) {
+                console.error("Error refreshing access token", error)
+                return { ...token, error: "RefreshAccessTokenError" }
+            }
         },
         async session({ session, token }) {
             // @ts-ignore
             session.accessToken = token.accessToken
+            // @ts-ignore
+            session.error = token.error
             // @ts-ignore
             if (session.user) session.user.username = token.username
             return session
@@ -94,3 +136,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         },
     },
 })
+
+declare module "next-auth" {
+    interface Session {
+        error?: "RefreshAccessTokenError"
+    }
+}
+
+declare module "next-auth/jwt" {
+    interface JWT {
+        accessToken?: string
+        refreshToken?: string
+        expiresAt?: number
+        error?: "RefreshAccessTokenError"
+        username?: string
+    }
+}
