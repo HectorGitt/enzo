@@ -2,7 +2,8 @@
 
 import { UserProfile, Win, RawActivity } from '@/lib/schema';
 import { useState, useMemo } from 'react';
-import { generateRepoHighlights } from '@/app/ai-actions';
+import { generateRepoHighlights, generateBioOptions } from '@/app/ai-actions';
+import { updateProfile } from '@/app/actions';
 import Link from 'next/link';
 import {
     ArrowLeft,
@@ -47,6 +48,7 @@ export function GitHubStudio({ profile }: { profile: UserProfile }) {
     const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(new Set());
     const [isGenerating, setIsGenerating] = useState(false);
     const [generatedHighlights, setGeneratedHighlights] = useState<Win[] | null>(null);
+    const [generatedBios, setGeneratedBios] = useState<string[] | null>(null);
 
     // Derived Data
     const selectedRepoData = repos.find(r => r[0] === selectedRepoName);
@@ -84,7 +86,8 @@ export function GitHubStudio({ profile }: { profile: UserProfile }) {
 
     const handleGenerate = async () => {
         setIsGenerating(true);
-        setGeneratedHighlights(null); // Clear previous
+        setGeneratedHighlights(null);
+        setGeneratedBios(null);
 
         // Collect full content of selected items
         const rawContext = allRepoItems
@@ -92,14 +95,24 @@ export function GitHubStudio({ profile }: { profile: UserProfile }) {
             .map(w => `Title: ${w.title}\nDate: ${w.date}\nContent: ${w.content}`)
             .join('\n\n---\n\n');
 
-        const result = await generateRepoHighlights(selectedRepoName, rawContext, tone, highlightCount);
-        setIsGenerating(false);
-
-        if (result.success && result.wins) {
-            setGeneratedHighlights(result.wins);
+        if (highlightCount === 1) {
+            // Bio Mode
+            const result = await generateBioOptions(selectedRepoName, rawContext, tone);
+            if (result.success && result.bios) {
+                setGeneratedBios(result.bios);
+            } else {
+                alert(`Error: ${result.error}`);
+            }
         } else {
-            alert(`Error: ${result.error}`);
+            // Highlight Mode
+            const result = await generateRepoHighlights(selectedRepoName, rawContext, tone, highlightCount);
+            if (result.success && result.wins) {
+                setGeneratedHighlights(result.wins);
+            } else {
+                alert(`Error: ${result.error}`);
+            }
         }
+        setIsGenerating(false);
     };
 
     return (
@@ -220,7 +233,10 @@ export function GitHubStudio({ profile }: { profile: UserProfile }) {
                                             <Zap size={20} className="text-purple-600" /> Generated Results
                                             <span className="text-xs bg-purple-200 text-purple-800 px-2 py-0.5 rounded-full">{generatedHighlights.length} items</span>
                                         </h3>
-                                        <button onClick={() => setGeneratedHighlights(null)} className="text-xs text-purple-400 hover:text-purple-600">Close</button>
+                                        <button onClick={() => {
+                                            setGeneratedHighlights(null);
+                                            setGeneratedBios(null);
+                                        }} className="text-xs text-purple-400 hover:text-purple-600">Close</button>
                                     </div>
                                     <div className="p-6 space-y-4">
                                         {generatedHighlights.map(win => (
@@ -237,6 +253,38 @@ export function GitHubStudio({ profile }: { profile: UserProfile }) {
                                     </div>
                                     <div className="bg-gray-50 p-3 text-center text-xs text-gray-400 flex items-center justify-center gap-2">
                                         <Check size={12} /> These highlights have been saved to your profile.
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* BIO SELECTION UI */}
+                            {generatedBios && (
+                                <div className="bg-white rounded-xl border border-blue-100 shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-4 duration-500 mb-8">
+                                    <div className="bg-blue-50/50 p-4 border-b border-blue-100 flex justify-between items-center">
+                                        <h3 className="text-blue-900 font-bold flex items-center gap-2">
+                                            <Sparkles size={20} className="text-blue-600" /> Select Your New Bio
+                                        </h3>
+                                        <button onClick={() => setGeneratedBios(null)} className="text-xs text-blue-400 hover:text-blue-600">Close</button>
+                                    </div>
+                                    <div className="p-6 grid gap-4">
+                                        {generatedBios.map((bio, idx) => (
+                                            <div key={idx} className="p-4 rounded-lg border border-gray-100 hover:border-blue-500 hover:bg-blue-50/20 transition-all cursor-pointer group"
+                                                onClick={async () => {
+                                                    if (confirm("Replace your current bio with this one?")) {
+                                                        await updateProfile({ ...profile, bio });
+                                                        setGeneratedBios(null);
+                                                    }
+                                                }}
+                                            >
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <span className="text-xs font-bold uppercase tracking-wider text-blue-600">
+                                                        {idx === 0 ? "The Professional" : idx === 1 ? "The Specialist" : "The Executive"}
+                                                    </span>
+                                                    <span className="opacity-0 group-hover:opacity-100 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full transition-opacity">Select</span>
+                                                </div>
+                                                <p className="text-sm text-gray-700 leading-relaxed">{bio}</p>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             )}
