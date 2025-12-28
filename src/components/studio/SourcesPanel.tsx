@@ -81,22 +81,24 @@ export function SourcesPanel({ profile }: { profile: UserProfile }) {
                                 <div className="space-y-3">
                                     {/* Preview Latest */}
                                     <div className="bg-white border border-black/5 rounded p-2">
-                                        <div className="text-[10px] uppercase font-bold text-gray-400 mb-1">Latest Collected</div>
                                         {profile.rawActivities && profile.rawActivities.filter(w => w.source === 'github').length > 0 ? (
-                                            <div className="space-y-1">
-                                                {profile.rawActivities
-                                                    .filter(w => w.source === 'github')
-                                                    .slice(0, 3)
-                                                    .map(w => (
-                                                        <div key={w.id} className="text-[10px] truncate border-b border-black/5 last:border-0 pb-1 last:pb-0 w-full min-w-0">
-                                                            {w.title.replace(/^Commit to .*?: /, '')}
-                                                        </div>
-                                                    ))
-                                                }
-                                                <div className="text-[9px] text-gray-400 text-center pt-1">
-                                                    + {profile.rawActivities.filter(w => w.source === 'github').length - 3} more
+                                            <>
+                                                <div className="text-[10px] uppercase font-bold text-gray-400 mb-1">Latest Collected</div>
+                                                <div className="space-y-1">
+                                                    {profile.rawActivities
+                                                        .filter(w => w.source === 'github')
+                                                        .slice(0, 3)
+                                                        .map(w => (
+                                                            <div key={w.id} className="text-[10px] truncate border-b border-black/5 last:border-0 pb-1 last:pb-0 w-full min-w-0">
+                                                                {w.title.replace(/^Commit to .*?: /, '')}
+                                                            </div>
+                                                        ))
+                                                    }
+                                                    <div className="text-[9px] text-gray-400 text-center pt-1">
+                                                        + {profile.rawActivities.filter(w => w.source === 'github').length - 3} more
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            </>
                                         ) : (
                                             <div className="text-[10px] text-gray-400 italic">No data yet. Sync now.</div>
                                         )}
