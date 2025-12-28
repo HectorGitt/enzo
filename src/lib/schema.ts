@@ -51,6 +51,15 @@ export interface SpeakingEngagement {
     link?: string;
 }
 
+export interface ResumeConfig {
+    template: string;
+    sections: {
+        id: string;
+        text: string; // Display name
+        visible: boolean;
+    }[];
+}
+
 export interface UserProfile {
     id: string;
     name: string;
@@ -67,6 +76,7 @@ export interface UserProfile {
     connectedProviders?: string[]; // IDs of connected providers e.g. ["github", "slack"]
     lastSyncLog?: string; // JSON string of logs
     rawActivities?: RawActivity[]; // Separate ingest data
+    resumeConfig?: ResumeConfig;
 }
 
 export interface RawActivity {

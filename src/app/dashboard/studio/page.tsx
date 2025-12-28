@@ -2,7 +2,7 @@ import { fetchProfile } from '@/app/actions';
 import { SourcesPanel } from '@/components/studio/SourcesPanel';
 import { RefinementPanel } from '@/components/studio/RefinementPanel';
 import { RepositoryExplorer } from '@/components/studio/RepositoryExplorer';
-import { PreviewPanel } from '@/components/studio/PreviewPanel';
+
 import { BackendErrorState } from '@/components/BackendErrorState';
 
 export default async function StudioPage() {
@@ -26,22 +26,19 @@ export default async function StudioPage() {
                 </div>
             </div>
 
-            {/* 3-Column Studio Layout */}
+            {/* 2-Column Studio Layout */}
             <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden bg-white">
                 <div className="lg:col-span-3 h-full overflow-hidden bg-gray-50/30">
                     <SourcesPanel profile={profile} />
                 </div>
-                {/* Right Panel - Stats & Output */}
-                <div className="lg:col-span-6 h-full overflow-hidden flex flex-col gap-4 p-4">
-                    <div className="flex-1 border border-black/10 rounded-lg overflow-hidden bg-white shadow-sm">
-                        <RefinementPanel profile={profile} />
-                    </div>
+                {/* Right Panel - Master Profile & Explorer */}
+                <div className="lg:col-span-9 h-full overflow-hidden flex flex-col gap-4 p-4">
                     <div className="h-1/3 border border-black/10 rounded-lg overflow-hidden bg-white shadow-sm">
                         <RepositoryExplorer activities={profile.rawActivities || []} />
                     </div>
-                </div>
-                <div className="lg:col-span-3 h-full overflow-hidden bg-gray-50/30 border-l border-black/5">
-                    <PreviewPanel profile={profile} />
+                    <div className="flex-1 border border-black/10 rounded-lg overflow-hidden bg-white shadow-sm">
+                        <RefinementPanel profile={profile} />
+                    </div>
                 </div>
             </div>
         </div>
