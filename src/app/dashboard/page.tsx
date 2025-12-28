@@ -8,6 +8,7 @@ import { SkillsSection } from '@/components/profile/SkillsSection';
 import { PublicationsSection } from '@/components/profile/PublicationsSection';
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
 import { SyncButton } from '@/components/dashboard/SyncButton';
+import { SummaryCard } from '@/components/dashboard/SummaryCard';
 
 export default async function DashboardPage() {
     let profile;
@@ -73,6 +74,10 @@ export default async function DashboardPage() {
                     </div>
                 )}
             </div>
+
+            {/* Professional Summary */}
+            <SummaryCard profile={profile} />
+
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 space-y-8">

@@ -1,3 +1,4 @@
+import React from 'react';
 import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer';
 import { UserProfile } from '@/lib/schema';
 
@@ -26,69 +27,101 @@ const styles = StyleSheet.create({
     skill: { backgroundColor: '#eee', padding: '2 6', borderRadius: 4, fontSize: 9 }
 });
 
-export const ResumeDocument = ({ profile }: { profile: UserProfile }) => (
-    <Document>
-        <Page size="A4" style={styles.page}>
-
-            {/* Header */}
-            <View style={styles.header}>
-                <Text style={styles.name}>{profile.name || 'Your Name'}</Text>
-                <Text style={styles.title}>{profile.title}</Text>
-                <View style={{ marginTop: 8 }}>
-                    <Text style={{ fontSize: 10, color: '#888', marginBottom: 2, textTransform: 'uppercase', fontWeight: 'bold' }}>Professional Summary</Text>
-                    <Text style={styles.description}>{profile.bio}</Text>
-                </View>
-            </View>
-
-            {/* Experience */}
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Experience</Text>
-                {profile.experience.map(exp => (
-                    <View key={exp.id} style={{ marginBottom: 10 }}>
-                        <View style={styles.row}>
-                            <Text style={styles.bold}>{exp.role}</Text>
-                            <Text style={styles.date}>{exp.startDate} - {exp.current ? 'Present' : exp.endDate}</Text>
-                        </View>
-                        <Text style={{ fontSize: 10, color: '#555', marginBottom: 4 }}>{exp.company}</Text>
-                        <Text style={styles.description}>{exp.description}</Text>
+const SectionComponents: Record<string, (profile: UserProfile, styles: any) => JSX.Element | null> = {
+    summary: (profile, styles) => (
+        <View style={{ marginTop: 8, marginBottom: 15 }}>
+            <Text style={{ fontSize: 10, color: '#888', marginBottom: 2, textTransform: 'uppercase', fontWeight: 'bold' }}>Professional Summary</Text>
+            <Text style={styles.description}>{profile.bio}</Text>
+        </View>
+    ),
+    experience: (profile, styles) => (
+        <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Experience</Text>
+            {profile.experience.map(exp => (
+                <View key={exp.id} style={{ marginBottom: 10 }}>
+                    <View style={styles.row}>
+                        <Text style={styles.bold}>{exp.role}</Text>
+                        <Text style={styles.date}>{exp.startDate} - {exp.current ? 'Present' : exp.endDate}</Text>
                     </View>
-                ))}
-            </View>
+                    <Text style={{ fontSize: 10, color: '#555', marginBottom: 4 }}>{exp.company}</Text>
+                    <Text style={styles.description}>{exp.description}</Text>
+                </View>
+            ))}
+        </View>
+    ),
+    wins: (profile, styles) => {
+        // Only show wins that are marked for resume. If no standard filtering applied yet, do it here.
+        // Assuming profile.wins is already filtered by DownloadResume wrapper, but safe to filter again or just map.
+        const wins = profile.wins.filter(w => w.showOnResume !== false && w.source !== 'github');
+        if (wins.length === 0) return null;
 
-            {/* Wins (Integrated into Experience or separate?) - For MVP separate to show off */}
+        return (
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Key Achievements</Text>
-                {profile.wins.slice(0, 5).map(win => (
+                {wins.map(win => (
                     <View key={win.id} style={{ marginBottom: 6 }}>
                         <Text style={{ fontWeight: 'bold', fontSize: 10 }}>• {win.summary}</Text>
                     </View>
                 ))}
             </View>
-
-            {/* Skills */}
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Skills</Text>
-                <View style={styles.skillRow}>
-                    {profile.skills.map(skill => (
-                        <Text key={skill.name} style={styles.skill}>{skill.name}</Text>
-                    ))}
-                </View>
-            </View>
-
-            {/* Education */}
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Education</Text>
-                {profile.education.map(edu => (
-                    <View key={edu.id}>
-                        <View style={styles.row}>
-                            <Text style={styles.bold}>{edu.school}</Text>
-                            <Text style={styles.date}>{edu.graduationDate}</Text>
-                        </View>
-                        <Text>{edu.degree}</Text>
-                    </View>
+        );
+    },
+    skills: (profile, styles) => (
+        <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Skills</Text>
+            <View style={styles.skillRow}>
+                {profile.skills.map(skill => (
+                    <Text key={skill.name} style={styles.skill}>{skill.name}</Text>
                 ))}
             </View>
+        </View>
+    ),
+    education: (profile, styles) => (
+        <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Education</Text>
+            {profile.education.map(edu => (
+                <View key={edu.id}>
+                    <View style={styles.row}>
+                        <Text style={styles.bold}>{edu.school}</Text>
+                        <Text style={styles.date}>{edu.graduationDate}</Text>
+                    </View>
+                    <Text>{edu.degree}</Text>
+                </View>
+            ))}
+        </View>
+    )
+};
 
-        </Page>
-    </Document>
-);
+export const ResumeDocument = ({ profile }: { profile: UserProfile }) => {
+    // Default config if missing
+    const config = profile.resumeConfig || {
+        template: 'tech',
+        sections: [
+            { id: 'summary', text: 'Professional Summary', visible: true },
+            { id: 'wins', text: 'Key Achievements', visible: true },
+            { id: 'experience', text: 'Experience', visible: true },
+            { id: 'skills', text: 'Skills', visible: true },
+            { id: 'education', text: 'Education', visible: true }
+        ]
+    };
+
+    return (
+        <Document>
+            <Page size="A4" style={styles.page}>
+                {/* Fixed Header (Name/Title) */}
+                <View style={styles.header}>
+                    <Text style={styles.name}>{profile.name || 'Your Name'}</Text>
+                    <Text style={styles.title}>{profile.title}</Text>
+                </View>
+
+                {/* Dynamic Sections */}
+                {config.sections
+                    .filter(s => s.visible)
+                    .map(s => {
+                        const Component = SectionComponents[s.id];
+                        return Component ? <View key={s.id}>{Component(profile, styles)}</View> : null;
+                    })}
+            </Page>
+        </Document>
+    );
+};

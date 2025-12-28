@@ -105,3 +105,51 @@ export async function generateRepoRefinement(
         throw e;
     }
 }
+
+export async function generateBioVariations(
+    activityContext: string,
+    tone: 'professional' | 'casual' | 'enthusiastic'
+) {
+    if (!API_KEY) throw new Error("Missing GEMINI_API_KEY");
+
+    const genAI = new GoogleGenerativeAI(API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+    const prompt = `
+    You are an expert technical resume writer.
+    Based on the following activity log, write distinct professional summaries (Bios) for the user's profile.
+    
+    Context:
+    ${activityContext.slice(0, 10000)}
+
+    Task: Create exactly 3 variations of a Professional Bio (approx 3-4 sentences each).
+    1. **The Professional**: Standard, polished, suited for enterprise roles.
+    2. **The Specialist**: Focuses heavily on the specific tech stack and hard skills found in the logs.
+    3. **The Executive**: High-level, focusing on impact, leadership, and value delivery (less implementation detail).
+
+    Tone guide: ${tone}
+
+    Output Format: JSON Array of strings.
+    Example:
+    [
+        "Experienced Full Stack Engineer with a focus on...",
+        "React and Node.js specialist who has shipped...",
+        "Engineering leader driving 20% efficiency gains..."
+    ]
+
+    Return ONLY the JSON array.
+    `;
+
+    try {
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+        const jsonMatch = text.match(/\[[\s\S]*\]/);
+
+        if (!jsonMatch) throw new Error("No JSON array found");
+        return JSON.parse(jsonMatch[0]) as string[];
+    } catch (e) {
+        console.error("Gemini Bio Gen Failed:", e);
+        throw e;
+    }
+}

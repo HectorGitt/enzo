@@ -1,7 +1,7 @@
 'use server';
 
 import { getProfile, saveProfile } from '@/lib/store';
-import { generateHighlightSummary, generateRepoRefinement } from '@/lib/gemini';
+import { generateHighlightSummary, generateRepoRefinement, generateBioVariations } from '@/lib/gemini';
 import { auth } from '@/auth';
 import { revalidatePath } from 'next/cache';
 import { Win } from '@/lib/schema';
@@ -86,6 +86,25 @@ export async function generateRepoHighlights(
         revalidatePath('/dashboard/studio');
         revalidatePath('/dashboard/studio/github');
         return { success: true, count: newWins.length, wins: newWins };
+    } catch (e: any) {
+        console.error(e);
+        return { success: false, error: e.message };
+    }
+}
+
+export async function generateBioOptions(
+    repoName: string,
+    activityContext: string,
+    tone: 'professional' | 'casual' | 'enthusiastic'
+) {
+    const session = await auth();
+    // @ts-ignore
+    const email = session?.user?.email as string;
+    if (!email) throw new Error("Unauthorized");
+
+    try {
+        const bios = await generateBioVariations(activityContext, tone);
+        return { success: true, bios };
     } catch (e: any) {
         console.error(e);
         return { success: false, error: e.message };
