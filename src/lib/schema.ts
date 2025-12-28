@@ -1,7 +1,7 @@
 export interface Win {
     id: string;
     title: string;
-    source: 'github' | 'slack' | 'manual';
+    source: 'github' | 'slack' | 'manual' | 'system';
     rawContent: string;
     summary: string; // The STAR format bullet point
     date: string;
