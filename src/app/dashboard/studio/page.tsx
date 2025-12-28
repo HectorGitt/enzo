@@ -37,7 +37,7 @@ export default async function StudioPage() {
                         <RefinementPanel profile={profile} />
                     </div>
                     <div className="h-1/3 border border-black/10 rounded-lg overflow-hidden bg-white shadow-sm">
-                        <RepositoryExplorer wins={profile.wins} />
+                        <RepositoryExplorer activities={profile.rawActivities || []} />
                     </div>
                 </div>
                 <div className="lg:col-span-3 h-full overflow-hidden bg-gray-50/30 border-l border-black/5">

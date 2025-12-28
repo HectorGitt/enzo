@@ -1,7 +1,8 @@
 'use client';
 
-import { Win } from '@/lib/schema';
+import { RawActivity } from '@/lib/schema';
 import { useState, useMemo } from 'react';
+
 // Icons
 const RepoIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
@@ -13,67 +14,34 @@ const PRIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="18" r="3"></circle><circle cx="6" cy="6" r="3"></circle><path d="M13 6h3a2 2 0 0 1 2 2v7"></path><line x1="6" y1="9" x2="6" y2="21"></line></svg>
 );
 
-// ... imports
-import { enhanceWinWithAI } from '@/app/ai-actions';
-
-// ... component starts
-export function RepositoryExplorer({ wins }: { wins: Win[] }) {
+export function RepositoryExplorer({ activities }: { activities: RawActivity[] }) {
     const [selectedRepo, setSelectedRepo] = useState<string | null>(null);
-    const [processingId, setProcessingId] = useState<string | null>(null);
 
-    const handleEnhance = async (e: React.MouseEvent, win: Win) => {
-        e.stopPropagation();
-        setProcessingId(win.id);
-        await enhanceWinWithAI(win.id, win.title, win.rawContent, win.source);
-        setProcessingId(null);
-    };
-
-    const AIButton = ({ win }: { win: Win }) => (
-        <button
-            onClick={(e) => handleEnhance(e, win)}
-            disabled={processingId === win.id}
-            className={`opacity-0 group-hover:opacity-100 transition-opacity absolute right-2 top-2 p-1.5 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-600 ${processingId === win.id ? 'opacity-100 animate-pulse' : ''}`}
-            title="Enhance with AI"
-        >
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" /></svg>
-        </button>
-    );
-
-
-    // Assumption: Last tag is often the repo name if source is github, or explicitly 'code'
-    // Better: Filter for tags that are NOT 'code', 'commit', 'pr', 'github', 'milestone'
     const repos = useMemo(() => {
-        const repoMap = new Map<string, { commits: Win[], prs: Win[] }>();
+        const repoMap = new Map<string, { commits: RawActivity[], prs: RawActivity[] }>();
 
-        wins.filter(w => w.source === 'github').forEach(win => {
-            // Find the tag that represents the repo. 
-            // Based on our ingest: tags are ['code', 'commit', 'RepoName'] or ['code', 'github', 'pr', 'RepoName']
-            const type = win.tags?.includes('pr') ? 'pr' : 'commit';
-
-            // Simple heuristic: exclude known keywords, pick the first remaining one (or last)
-            const ignored = new Set(['code', 'commit', 'github', 'pr', 'pending', 'approved', 'milestone']);
-            let foundRepo = 'Unknown';
-            if (win.tags) {
-                // Usually the repo name is the last one or close to it
-                for (const t of win.tags) {
-                    if (!ignored.has(t)) {
-                        foundRepo = t;
-                        break;
-                    }
-                }
+        // Filter for GitHub source only if needed, or assume caller filters
+        activities.filter(a => a.source === 'github').forEach(act => {
+            let meta: any = {};
+            try {
+                meta = JSON.parse(act.metadataJson);
+            } catch (e) {
+                meta = { repo: 'Unknown', type: 'commit' };
             }
 
-            if (!repoMap.has(foundRepo)) {
-                repoMap.set(foundRepo, { commits: [], prs: [] });
+            const repoName = meta.repo || 'Unknown';
+            const type = meta.type || 'commit';
+
+            if (!repoMap.has(repoName)) {
+                repoMap.set(repoName, { commits: [], prs: [] });
             }
-            const group = repoMap.get(foundRepo)!;
-            if (type === 'pr') group.prs.push(win);
-            else group.commits.push(win);
+            const group = repoMap.get(repoName)!;
+            if (type === 'pr') group.prs.push(act);
+            else group.commits.push(act);
         });
 
         return Array.from(repoMap.entries()).sort((a, b) => a[0].localeCompare(b[0]));
-    }, [wins]);
-
+    }, [activities]);
 
     return (
         <div className="flex flex-col h-full bg-white">
@@ -117,12 +85,10 @@ export function RepositoryExplorer({ wins }: { wins: Win[] }) {
                                 <div>
                                     <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Pull Requests</h4>
                                     <div className="space-y-2">
-                                        {repos.find(r => r[0] === selectedRepo)?.[1].prs.map(win => (
-                                            <div key={win.id} className="group relative bg-white p-3 border border-black/5 rounded-lg shadow-sm">
-                                                <div className="text-sm font-medium text-blue-600 mb-1 pr-6">{win.title}</div>
-                                                <div className="text-xs text-gray-600">{win.summary}</div>
-                                                <div className="text-[10px] text-gray-400 mt-2">{win.date}</div>
-                                                <AIButton win={win} />
+                                        {repos.find(r => r[0] === selectedRepo)?.[1].prs.map(act => (
+                                            <div key={act.id} className="group relative bg-white p-3 border border-black/5 rounded-lg shadow-sm">
+                                                <div className="text-sm font-medium text-blue-600 mb-1 pr-6 truncate">{act.title}</div>
+                                                <div className="text-[10px] text-gray-400">{act.date}</div>
                                             </div>
                                         ))}
                                     </div>
@@ -134,14 +100,11 @@ export function RepositoryExplorer({ wins }: { wins: Win[] }) {
                                 <div>
                                     <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Commits</h4>
                                     <div className="space-y-2">
-                                        {repos.find(r => r[0] === selectedRepo)?.[1].commits.map(win => (
-                                            <div key={win.id} className="group relative bg-white p-3 border border-black/5 rounded-lg shadow-sm hover:border-blue-400 transition-colors">
-                                                <div className="text-sm text-black mb-1 pr-6">{win.title.replace(`Commit to ${selectedRepo}: `, '')}</div>
-                                                <div className="text-[10px] text-gray-400">{win.date} • {win.id}</div>
-                                                {win.summary && !win.summary.startsWith('Contributed to') && (
-                                                    <div className="mt-2 text-xs text-gray-600 italic border-l-2 border-blue-200 pl-2">{win.summary}</div>
-                                                )}
-                                                <AIButton win={win} />
+                                        {repos.find(r => r[0] === selectedRepo)?.[1].commits.map(act => (
+                                            <div key={act.id} className="group relative bg-white p-3 border border-black/5 rounded-lg shadow-sm hover:border-blue-400 transition-colors">
+                                                <div className="text-sm text-black mb-1 pr-6 truncate">{act.title.replace(`Commit to ${selectedRepo}: `, '')}</div>
+                                                <div className="text-[10px] text-gray-400">{act.date}</div>
+                                                <div className="text-[10px] text-gray-500 mt-1 line-clamp-1">{act.content.split('\n')[0]}</div>
                                             </div>
                                         ))}
                                     </div>
