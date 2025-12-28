@@ -13,8 +13,8 @@ export default function DashboardLayout({
             <DashboardSidebar />
 
             {/* Main Content */}
-            <main className="flex-1 overflow-y-auto scroll-smooth">
-                <div className="container py-8 max-w-5xl">
+            <main className="flex-1 overflow-hidden">
+                <div className="w-full px-4 py-4 h-full">
                     {children}
                 </div>
             </main>
