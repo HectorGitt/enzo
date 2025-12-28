@@ -44,12 +44,12 @@ export function SourcesPanel({ profile }: { profile: UserProfile }) {
                 <p className="text-xs text-[var(--text-secondary)] mt-1">Raw data sources</p>
             </div>
 
-            <div className="p-4 space-y-4 overflow-y-auto flex-1">
+            <div className="p-4 space-y-4 overflow-y-auto overflow-x-hidden flex-1">
                 {providers.map(provider => {
                     const isConnected = connected.has(provider);
                     return (
                         <div key={provider} className={`p-4 rounded-lg border ${isConnected ? 'border-green-200 bg-green-50/30' : 'border-dashed border-black/10'}`}>
-                            <div className="flex justify-between items-center mb-2">
+                            <div className="flex flex-wrap justify-between items-center gap-y-2 mb-2">
                                 <span className="capitalize font-bold flex items-center gap-2">
                                     {provider}
                                     {provider === 'github' && isConnected && (
@@ -71,9 +71,9 @@ export function SourcesPanel({ profile }: { profile: UserProfile }) {
                                     )}
                                 </span>
                                 {isConnected ? (
-                                    <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Active</span>
+                                    <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full shrink-0">Active</span>
                                 ) : (
-                                    <span className="text-[10px] text-[var(--text-muted)]">Disconnected</span>
+                                    <span className="text-[10px] text-[var(--text-muted)] shrink-0">Disconnected</span>
                                 )}
                             </div>
 
@@ -88,7 +88,7 @@ export function SourcesPanel({ profile }: { profile: UserProfile }) {
                                                     .filter(w => w.source === 'github')
                                                     .slice(0, 3)
                                                     .map(w => (
-                                                        <div key={w.id} className="text-[10px] truncate border-b border-black/5 last:border-0 pb-1 last:pb-0">
+                                                        <div key={w.id} className="text-[10px] truncate border-b border-black/5 last:border-0 pb-1 last:pb-0 w-full min-w-0">
                                                             {w.title.replace(/^Commit to .*?: /, '')}
                                                         </div>
                                                     ))
@@ -131,7 +131,7 @@ export function SourcesPanel({ profile }: { profile: UserProfile }) {
                         logs.map((log, i) => (
                             <div key={i} className="mb-1 border-b border-black/5 pb-1 last:border-0">
                                 <span className="text-[var(--text-muted)]">[{log.timestamp.split('T')[1].split('.')[0]}]</span>{' '}
-                                <span className={log.level === 'error' ? 'text-red-500 font-bold' : 'text-gray-700'}>{log.message}</span>
+                                <span className={`${log.level === 'error' ? 'text-red-500 font-bold' : 'text-gray-700'} break-all`}>{log.message}</span>
                             </div>
                         ))
                     )}

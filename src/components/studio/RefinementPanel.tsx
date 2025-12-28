@@ -32,10 +32,10 @@ export function RefinementPanel({ profile }: { profile: UserProfile }) {
                             <div className="flex-1 min-w-0">
                                 <h4 className="font-medium text-sm truncate">{win.title}</h4>
                                 <p className="text-xs text-[var(--text-secondary)] line-clamp-2">{win.summary}</p>
-                                <div className="flex gap-2 mt-2">
-                                    <span className="text-[10px] px-1.5 py-0.5 bg-black/5 rounded text-[var(--text-muted)]">{win.source}</span>
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                    <span className="text-[10px] px-2 py-1.5 bg-black/5 rounded text-[var(--text-muted)] font-medium text-center">{win.source}</span>
                                     {win.tags?.map(t => (
-                                        <span key={t} className="text-[10px] px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded">{t}</span>
+                                        <span key={t} className="flex-1 text-[10px] bg-black/5 text-[var(--text-secondary)] px-3 py-1.5 rounded text-center whitespace-nowrap font-medium min-w-fit">{t}</span>
                                     ))}
                                 </div>
                             </div>

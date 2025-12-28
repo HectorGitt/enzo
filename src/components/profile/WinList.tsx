@@ -96,9 +96,9 @@ export function WinList({ profile }: { profile: UserProfile }) {
                             <span className="text-xs text-[var(--text-muted)]">{win.date}</span>
                         </div>
                         <p className="text-sm leading-relaxed">{win.summary}</p>
-                        <div className="mt-3 flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+                        <div className="mt-3 flex flex-wrap gap-2">
                             {win.tags?.map(t => (
-                                <span key={t} className="flex-none text-[10px] bg-blue-50 text-blue-700 px-3 py-1.5 rounded text-center whitespace-nowrap font-medium">{t}</span>
+                                <span key={t} className="flex-1 text-[10px] bg-black/5 text-[var(--text-secondary)] px-3 py-1.5 rounded text-center whitespace-nowrap font-medium min-w-fit">{t}</span>
                             ))}
                         </div>
                     </div>

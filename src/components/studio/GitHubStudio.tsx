@@ -227,9 +227,9 @@ export function GitHubStudio({ profile }: { profile: UserProfile }) {
                                             <div key={win.id} className="border-b border-dashed border-gray-100 pb-4 last:border-0 last:pb-0">
                                                 <h4 className="font-bold text-lg text-gray-800">{win.title}</h4>
                                                 <p className="text-gray-600 mt-1">{win.summary}</p>
-                                                <div className="mt-3 flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+                                                <div className="mt-3 flex flex-wrap gap-2">
                                                     {win.tags?.map(t => (
-                                                        <span key={t} className="flex-none text-[10px] bg-blue-50 text-blue-700 px-3 py-1.5 rounded text-center whitespace-nowrap font-medium">{t}</span>
+                                                        <span key={t} className="flex-1 text-[10px] bg-black/5 text-gray-600 px-3 py-1.5 rounded text-center whitespace-nowrap font-medium min-w-fit">{t}</span>
                                                     ))}
                                                 </div>
                                             </div>
