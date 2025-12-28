@@ -13,7 +13,8 @@ import {
     Globe,
     Zap,
     Check,
-    Loader2
+    Loader2,
+    Save
 } from 'lucide-react';
 
 // Helper to filter/group wins by repo
@@ -49,6 +50,7 @@ export function GitHubStudio({ profile }: { profile: UserProfile }) {
     const [isGenerating, setIsGenerating] = useState(false);
     const [generatedHighlights, setGeneratedHighlights] = useState<Win[] | null>(null);
     const [generatedBios, setGeneratedBios] = useState<string[] | null>(null);
+    const [bioToConfirm, setBioToConfirm] = useState<string | null>(null);
 
     // Derived Data
     const selectedRepoData = repos.find(r => r[0] === selectedRepoName);
@@ -269,12 +271,7 @@ export function GitHubStudio({ profile }: { profile: UserProfile }) {
                                     <div className="p-6 grid gap-4">
                                         {generatedBios.map((bio, idx) => (
                                             <div key={idx} className="p-4 rounded-lg border border-gray-100 hover:border-blue-500 hover:bg-blue-50/20 transition-all cursor-pointer group"
-                                                onClick={async () => {
-                                                    if (confirm("Replace your current bio with this one?")) {
-                                                        await updateProfile({ ...profile, bio });
-                                                        setGeneratedBios(null);
-                                                    }
-                                                }}
+                                                onClick={() => setBioToConfirm(bio)}
                                             >
                                                 <div className="flex justify-between items-start mb-2">
                                                     <span className="text-xs font-bold uppercase tracking-wider text-blue-600">
@@ -285,6 +282,58 @@ export function GitHubStudio({ profile }: { profile: UserProfile }) {
                                                 <p className="text-sm text-gray-700 leading-relaxed">{bio}</p>
                                             </div>
                                         ))}
+                                    </div>
+                                    <div className="px-6 pb-6 pt-3 border-t border-blue-50 bg-blue-50/30 flex justify-end">
+                                        <button
+                                            onClick={async () => {
+                                                if (generatedBios) {
+                                                    await updateProfile({ ...profile, bioVariations: generatedBios });
+                                                    alert("Saved all 3 variations to your Resume Builder!");
+                                                    setGeneratedBios(null);
+                                                }
+                                            }}
+                                            className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                                        >
+                                            <Save size={14} /> Save All for Later
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* CONFIRMATION MODAL */}
+                            {bioToConfirm && (
+                                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                                    <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 animate-in zoom-in-95 duration-200">
+                                        <h3 className="text-lg font-bold text-gray-900 mb-2">Apply New Bio?</h3>
+                                        <p className="text-gray-600 text-sm mb-6 leading-relaxed">
+                                            This will overwrite your existing professional summary. You can always revert or edit it later in the dashboard.
+                                        </p>
+                                        <div className="bg-gray-50 border border-gray-100 rounded-lg p-3 text-xs text-gray-600 italic mb-6 max-h-32 overflow-y-auto">
+                                            "{bioToConfirm}"
+                                        </div>
+                                        <div className="flex justify-end gap-3">
+                                            <button
+                                                onClick={() => setBioToConfirm(null)}
+                                                className="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-lg font-medium text-sm transition-colors"
+                                            >
+                                                Cancel
+                                            </button>
+                                            <button
+                                                onClick={async () => {
+                                                    // Save the selected one AS bio, AND save all as variations
+                                                    await updateProfile({
+                                                        ...profile,
+                                                        bio: bioToConfirm,
+                                                        ...(generatedBios ? { bioVariations: generatedBios } : {})
+                                                    });
+                                                    setBioToConfirm(null);
+                                                    setGeneratedBios(null);
+                                                }}
+                                                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold text-sm hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200"
+                                            >
+                                                Confirm & Save
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             )}

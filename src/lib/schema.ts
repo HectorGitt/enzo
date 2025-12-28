@@ -77,6 +77,7 @@ export interface UserProfile {
     lastSyncLog?: string; // JSON string of logs
     rawActivities?: RawActivity[]; // Separate ingest data
     resumeConfig?: ResumeConfig;
+    bioVariations?: string[]; // Saved AI generated bios
 }
 
 export interface RawActivity {
