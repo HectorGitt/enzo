@@ -57,15 +57,19 @@ export async function fetchAllRepos(token: string): Promise<GitHubRepo[]> {
 export async function fetchRecentCommits(token: string, owner: string, repo: string, authorUser: string, limit: number = 5): Promise<GitHubCommit[]> {
     const octokit = await createOctokit(token);
     try {
-        const { data } = await octokit.rest.repos.listCommits({
+        // Use paginate to fetch more than 100 if needed (GitHub API per_page max is 100)
+        const commits = await octokit.paginate(octokit.rest.repos.listCommits, {
             owner,
             repo,
             author: authorUser,
-            per_page: limit
+            per_page: 100, // Max per page
         });
 
+        // Limit the total results locally
+        const recentCommits = commits.slice(0, limit);
+
         // @ts-ignore
-        return data.map(c => ({
+        return recentCommits.map(c => ({
             sha: c.sha,
             commit: {
                 message: c.commit.message,

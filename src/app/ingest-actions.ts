@@ -70,8 +70,8 @@ export async function ingestGitHub(username: string, token: string, email: strin
             const chunk = activeRepos.slice(i, i + chunkCheck);
             await Promise.all(chunk.map(async (repo) => {
                 try {
-                    // Fetch ALL recent commits (up to 100 per repo)
-                    const commits = await fetchRecentCommits(token, repo.full_name.split('/')[0], repo.name, username, 100);
+                    // Fetch ALL recent commits (up to 500 per repo)
+                    const commits = await fetchRecentCommits(token, repo.full_name.split('/')[0], repo.name, username, 500);
                     if (commits.length > 0) {
                         log(`[${repo.name}] Found ${commits.length} commits`, "info");
                         // Convert to RawActivity format
