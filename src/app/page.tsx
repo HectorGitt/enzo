@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { Radar, Cpu, Globe, Check } from 'lucide-react';
 
 export default async function Home() {
   const session = await auth();
@@ -82,11 +83,15 @@ export default async function Home() {
                 </div>
                 <div className="glass-panel p-8 border border-[var(--accent-cyan)]/30 absolute top-[-20px] -left-4 shadow-[0_4px_20px_rgba(0,0,0,0.1)]">
                   <div className="flex items-center gap-4 mb-4">
-                    <div className="w-10 h-10 rounded-full bg-[var(--accent-cyan)]/20 flex items-center justify-center text-[var(--accent-cyan)]">✓</div>
+                    <div className="w-10 h-10 rounded-full bg-[var(--accent-cyan)]/20 flex items-center justify-center text-[var(--accent-cyan)]">
+                      <Check className="w-5 h-5" />
+                    </div>
                     <div className="font-bold">Optimized API Latency by 40%</div>
                   </div>
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-[var(--accent-purple)]/20 flex items-center justify-center text-[var(--accent-purple)]">✓</div>
+                    <div className="w-10 h-10 rounded-full bg-[var(--accent-purple)]/20 flex items-center justify-center text-[var(--accent-purple)]">
+                      <Check className="w-5 h-5" />
+                    </div>
                     <div className="font-bold">Shipped Dark Mode UI</div>
                   </div>
                 </div>
@@ -102,8 +107,8 @@ export default async function Home() {
             <div className="grid md:grid-cols-3 gap-8">
               {/* Step 1 */}
               <div className="relative group">
-                <div className="w-16 h-16 mx-auto bg-white border border-black/10 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:border-[var(--accent-cyan)] group-hover:shadow-[0_4px_20px_rgba(0,188,212,0.2)] transition-all">
-                  ⚡
+                <div className="w-16 h-16 mx-auto bg-white border border-black/10 rounded-2xl flex items-center justify-center mb-6 group-hover:border-[var(--accent-cyan)] group-hover:shadow-[0_4px_20px_rgba(0,188,212,0.2)] transition-all">
+                  <Radar className="w-8 h-8 text-[var(--accent-cyan)]" />
                 </div>
                 <h3 className="text-xl font-bold mb-2">1. Ingest</h3>
                 <p className="text-[var(--text-secondary)] text-sm px-4">Enzo listens to your GitHub commits and merged PRs automatically.</p>
@@ -111,8 +116,8 @@ export default async function Home() {
 
               {/* Step 2 */}
               <div className="relative group">
-                <div className="w-16 h-16 mx-auto bg-white border border-black/10 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:border-[var(--accent-purple)] group-hover:shadow-[0_4px_20px_rgba(156,39,176,0.2)] transition-all">
-                  🧠
+                <div className="w-16 h-16 mx-auto bg-white border border-black/10 rounded-2xl flex items-center justify-center mb-6 group-hover:border-[var(--accent-purple)] group-hover:shadow-[0_4px_20px_rgba(156,39,176,0.2)] transition-all">
+                  <Cpu className="w-8 h-8 text-[var(--accent-purple)]" />
                 </div>
                 <h3 className="text-xl font-bold mb-2">2. Analyze</h3>
                 <p className="text-[var(--text-secondary)] text-sm px-4">Our engine filters noise and formats your work into impact-driven "Highlights".</p>
@@ -120,8 +125,8 @@ export default async function Home() {
 
               {/* Step 3 */}
               <div className="relative group">
-                <div className="w-16 h-16 mx-auto bg-white border border-black/10 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:border-black/20 group-hover:shadow-[0_4px_20px_rgba(0,0,0,0.1)] transition-all">
-                  🚀
+                <div className="w-16 h-16 mx-auto bg-white border border-black/10 rounded-2xl flex items-center justify-center mb-6 group-hover:border-black/20 group-hover:shadow-[0_4px_20px_rgba(0,0,0,0.1)] transition-all">
+                  <Globe className="w-8 h-8 text-black/60" />
                 </div>
                 <h3 className="text-xl font-bold mb-2">3. Publish</h3>
                 <p className="text-[var(--text-secondary)] text-sm px-4">Generate a clean PDF resume or share your always-updated public portfolio.</p>
