@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { DownloadResume } from '@/components/resume/DownloadResume';
 import { HighlightsModal } from './HighlightsModal';
 import { SummaryModal } from './SummaryModal';
+import { SkillsModal } from './SkillsModal';
 import { GripVertical, Eye, EyeOff, Save, Loader2, ArrowUp, ArrowDown } from 'lucide-react';
 
 // Default config constant
@@ -87,6 +88,9 @@ export function ResumeBuilder({ profile }: { profile: UserProfile }) {
                     onRefresh={handleRefresh}
                 />
             )}
+            {editingSection === 'skills' && (
+                <SkillsModal profile={profile} onClose={closeEdit} onRefresh={handleRefresh} />
+            )}
 
             {/* Left: Editor */}
             <div className="w-1/3 flex flex-col gap-4">
@@ -116,7 +120,7 @@ export function ResumeBuilder({ profile }: { profile: UserProfile }) {
                                 <span className="flex-1 font-medium text-sm">{section.text}</span>
 
                                 <div className="flex items-center gap-1">
-                                    {(section.id === 'summary' || section.id === 'wins') && (
+                                    {(section.id === 'summary' || section.id === 'wins' || section.id === 'skills') && (
                                         <button
                                             onClick={() => handleEdit(section.id)}
                                             className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-black mr-1"
