@@ -8,7 +8,7 @@ export function BackendErrorState({ error }: { error?: any }) {
             </div>
             <h1 className="text-2xl font-bold mb-2">Backend Unavailable</h1>
             <p className="text-[var(--text-secondary)] mb-6 max-w-md">
-                Enzo's brain is currently sleeping. Please ensure the backend server is running on port 8000.
+                Enzo's brain is currently sleeping. Please ensure the backend server is running on port 5000.
             </p>
             <button
                 onClick={() => window.location.reload()}
