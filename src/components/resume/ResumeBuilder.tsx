@@ -9,6 +9,7 @@ import { HighlightsModal } from './HighlightsModal';
 import { SummaryModal } from './SummaryModal';
 import { SkillsModal } from './SkillsModal';
 import { ResumeUploader } from '@/components/studio/ResumeUploader';
+import { PDFPreview } from '@/components/resume/PDFPreview';
 import { GripVertical, Eye, EyeOff, Save, Loader2, ArrowUp, ArrowDown } from 'lucide-react';
 
 // Default config constant
@@ -250,37 +251,9 @@ export function ResumeBuilder({ profile }: { profile: UserProfile }) {
                     <DownloadResume profile={previewProfile} />
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-8 flex justify-center no-scrollbar">
-
-                    {/* 
-                        We can't easily embed the PDF viewer here if DownloadResume is just a link.
-                        Ideally we'd use PDFViewer from react-pdf, but it's often flaky in Next.js due to browser APIs.
-                        For a robust approach in this MVP, we will rely on "Download PDF" to check, 
-                        OR we can try to render the PDFViewer client-side.
-                        
-                        Given implementation plan said "Live Preview", I should attempt basic HTML preview 
-                        OR assume the user downloads to view. 
-                        
-                        For now, let's keep it simple: A placeholder that says "PDF Preview" 
-                        OR we render a simplified HTML representation of the resume. 
-                        
-                        Let's try to render a HTML approximation for the "Live Preview" experience
-                        to avoid heavy PDF rendering lag in the browser.
-                    */}
-                    <div className="w-[210mm] min-h-[297mm] bg-white shadow-xl p-10 text-xs text-gray-800 origin-top scale-75 md:scale-90 lg:scale-100 transition-transform">
-                        {/* Header */}
-                        <div className="border-b pb-6 mb-6">
-                            <h1 className="text-3xl font-bold">{previewProfile.name || "Your Name"}</h1>
-                            <p className="text-gray-500 text-lg mt-1">{previewProfile.title}</p>
-                        </div>
-
-                        {config.sections.filter(s => s.visible).map(s => (
-                            <div key={s.id} className="mb-8">
-                                <h3 className="uppercase tracking-wider font-bold border-b pb-1 mb-4 text-gray-400 text-xs">{s.text}</h3>
-                                {renderHtmlSection(s.id, previewProfile)}
-                            </div>
-                        ))}
-                    </div>
+                {/* PDF Viewer takes full height */}
+                <div className="flex-1 w-full h-full">
+                    <PDFPreview profile={previewProfile} />
                 </div>
             </div>
         </div>
@@ -290,63 +263,4 @@ export function ResumeBuilder({ profile }: { profile: UserProfile }) {
 // Icon helper
 function SettingsIcon({ size }: { size: number }) {
     return <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.09a2 2 0 0 1-1-1.74v-.47a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.39a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" /><circle cx="12" cy="12" r="3" /></svg>;
-}
-
-// Simple HTML renderer for the preview
-function renderHtmlSection(id: string, profile: UserProfile) {
-    if (id === 'summary') return <p className="leading-relaxed text-gray-600">{profile.bio}</p>;
-
-    if (id === 'wins') {
-        const wins = (profile.wins || []).filter(w => w.showOnResume !== false && w.source !== 'github');
-        if (!wins.length) return <p className="italic text-gray-400">No highlights selected.</p>;
-        return (
-            <ul className="space-y-2">
-                {wins.map(w => <li key={w.id} className="font-semibold">• {w.summary}</li>)}
-            </ul>
-        );
-    }
-
-    if (id === 'experience') {
-        return (
-            <div className="space-y-4">
-                {(profile.experience || []).map(exp => (
-                    <div key={exp.id}>
-                        <div className="flex justify-between font-bold text-gray-900">
-                            <span>{exp.role}</span>
-                            <span className="text-gray-500 font-normal">{exp.startDate} - {exp.current ? 'Present' : exp.endDate}</span>
-                        </div>
-                        <div className="text-gray-800">{exp.company}</div>
-                        <p className="mt-1 text-gray-600">{exp.description}</p>
-                    </div>
-                ))}
-            </div>
-        );
-    }
-
-    if (id === 'skills') {
-        return (
-            <div className="flex flex-wrap gap-2">
-                {(profile.skills || []).map(s => (
-                    <span key={s.name} className="px-2 py-1 bg-gray-100 rounded text-gray-700">{s.name}</span>
-                ))}
-            </div>
-        );
-    }
-
-    if (id === 'education') {
-        return (
-            <div className="space-y-4">
-                {(profile.education || []).map(edu => (
-                    <div key={edu.id}>
-                        <div className="flex justify-between font-bold text-gray-900">
-                            <span>{edu.school}</span>
-                            <span className="text-gray-500 font-normal">{edu.graduationDate}</span>
-                        </div>
-                        <div className="text-gray-800">{edu.degree}</div>
-                    </div>
-                ))}
-            </div>
-        );
-    }
-    return null;
 }
