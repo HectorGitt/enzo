@@ -2,12 +2,13 @@
 
 import { UserProfile, ResumeConfig } from '@/lib/schema';
 import { updateProfile } from '@/app/actions';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { DownloadResume } from '@/components/resume/DownloadResume';
 import { HighlightsModal } from './HighlightsModal';
 import { SummaryModal } from './SummaryModal';
 import { SkillsModal } from './SkillsModal';
+import { ResumeUploader } from '@/components/studio/ResumeUploader';
 import { GripVertical, Eye, EyeOff, Save, Loader2, ArrowUp, ArrowDown } from 'lucide-react';
 
 // Default config constant
@@ -26,7 +27,20 @@ export function ResumeBuilder({ profile }: { profile: UserProfile }) {
     const [config, setConfig] = useState<ResumeConfig>(profile.resumeConfig || DEFAULT_CONFIG);
     const [isSaving, setIsSaving] = useState(false);
 
-    // If profile has no config initially, we should probably set it, but we can wait until save.
+    // Template State
+    const [selectedTemplate, setSelectedTemplate] = useState<string>('default');
+    const [templates, setTemplates] = useState<any[]>([]);
+    const [isUploading, setIsUploading] = useState(false);
+
+    // Initial Load
+    useEffect(() => {
+        import('@/lib/store').then(async (mod) => {
+            try {
+                const t = await mod.getTemplates(profile.email);
+                setTemplates(t);
+            } catch { }
+        });
+    }, [profile.email]);
 
     // Create a local profile object that includes the current config ONLY for the preview
     // The Preview uses ResumeDocument which reads profile.resumeConfig
@@ -58,6 +72,33 @@ export function ResumeBuilder({ profile }: { profile: UserProfile }) {
             alert("Failed to save configuration");
         }
         setIsSaving(false);
+    };
+
+    const handleUploadTemplate = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files?.[0]) return;
+        setIsUploading(true);
+        try {
+            const { uploadTemplate, getTemplates } = await import('@/lib/store');
+            // uploadTemplate(file, userId)
+            await uploadTemplate(e.target.files[0], profile.email);
+            const t = await getTemplates(profile.email);
+            setTemplates(t);
+        } catch (e) {
+            alert("Failed to upload template");
+        }
+        setIsUploading(false);
+    };
+
+    const handleDownloadDocx = async () => {
+        try {
+            const { generateResumeDocx } = await import('@/lib/store');
+            // generateResumeDocx(templateId, profile)
+            // templateId is selectedTemplate (or null if "default")
+            const tid = selectedTemplate === 'default' ? null : selectedTemplate;
+            await generateResumeDocx(tid, profile);
+        } catch (e) {
+            alert('Failed to generate DOCX');
+        }
     };
 
     const [editingSection, setEditingSection] = useState<string | null>(null);
@@ -94,6 +135,14 @@ export function ResumeBuilder({ profile }: { profile: UserProfile }) {
 
             {/* Left: Editor */}
             <div className="w-1/3 flex flex-col gap-4">
+                {/* 1. Smart Import (Default) */}
+                <div className="bg-white rounded-xl border border-black/10 shadow-sm p-4">
+                    <h2 className="font-bold text-lg mb-4 flex items-center gap-2">
+                        <span>📄</span> Auto-Fill
+                    </h2>
+                    <ResumeUploader profile={profile} />
+                </div>
+
                 <div className="bg-white rounded-xl border border-black/10 shadow-sm p-4">
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="font-bold text-lg">Structure</h2>
@@ -161,6 +210,38 @@ export function ResumeBuilder({ profile }: { profile: UserProfile }) {
                         <strong>Tip:</strong> Reorder sections to highlight your strengths. Changes are reflected in the preview immediately.
                     </div>
                 </div>
+
+                {/* Template Selector */}
+                <div className="bg-white rounded-xl border border-black/10 shadow-sm p-4">
+                    <h2 className="font-bold text-lg mb-4 text-gray-500 text-sm uppercase tracking-wider">Advanced</h2>
+                    <h3 className="font-bold mb-2">Custom Templates</h3>
+                    <div className="space-y-4">
+                        <select
+                            value={selectedTemplate}
+                            onChange={(e) => setSelectedTemplate(e.target.value)}
+                            className="w-full text-sm border-gray-300 rounded-md shadow-sm p-2 bg-gray-50"
+                        >
+                            <option value="default">Default Template (Word)</option>
+                            {templates.map(t => (
+                                <option key={t.id} value={t.id}>{t.name}</option>
+                            ))}
+                        </select>
+
+                        <div className="flex gap-2">
+                            <label className="flex-1 btn-secondary text-center text-xs cursor-pointer py-2">
+                                {isUploading ? 'Uploading...' : 'Upload .docx Template'}
+                                <input type="file" accept=".docx" className="hidden" onChange={handleUploadTemplate} />
+                            </label>
+
+                            <button onClick={handleDownloadDocx} className="flex-1 btn-primary text-xs py-2">
+                                Download Word
+                            </button>
+                        </div>
+                        <p className="text-[10px] text-gray-500">
+                            Upload a .docx file with tags like {'{{name}}'}, {'{{summary}}'} to customize.
+                        </p>
+                    </div>
+                </div>
             </div>
 
             {/* Right: Preview */}
@@ -170,6 +251,7 @@ export function ResumeBuilder({ profile }: { profile: UserProfile }) {
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-8 flex justify-center no-scrollbar">
+
                     {/* 
                         We can't easily embed the PDF viewer here if DownloadResume is just a link.
                         Ideally we'd use PDFViewer from react-pdf, but it's often flaky in Next.js due to browser APIs.

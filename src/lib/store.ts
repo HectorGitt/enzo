@@ -108,3 +108,51 @@ export async function uploadLinkedInPdf(file: File, email: string): Promise<any>
         throw error;
     }
 }
+
+export async function uploadTemplate(file: File, userId: string): Promise<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('user_id', userId);
+
+    const res = await fetch(`${API_URL}/upload-template`, {
+        method: 'POST',
+        body: formData,
+    });
+
+    if (!res.ok) {
+        throw new Error('Failed to upload template');
+    }
+    return await res.json();
+}
+
+export async function getTemplates(userId: string): Promise<any[]> {
+    const res = await fetch(`${API_URL}/templates?email=${userId}`);
+    if (!res.ok) throw new Error('Failed to fetch templates');
+    return await res.json();
+}
+
+export async function generateResumeDocx(templateId: string | null, profile: UserProfile): Promise<void> {
+    const res = await fetch(`${API_URL}/generate-resume/docx`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            template_id: templateId,
+            profile: profile
+        })
+    });
+
+    if (!res.ok) {
+        throw new Error('Failed to generate DOCX');
+    }
+
+    // Trigger download
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `resume-${profile.name.replace(/\s+/g, '_')}.docx`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+}
