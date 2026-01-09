@@ -63,6 +63,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 token.refreshToken = account.refresh_token
                 token.expiresAt = account.expires_at
                 token.username = (profile as any)?.login
+                token.provider = account.provider
 
                 // Track connected provider
                 if (user?.email) {
@@ -127,6 +128,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             // @ts-ignore
             session.error = token.error
             // @ts-ignore
+            session.provider = token.provider
+            // @ts-ignore
             if (session.user) session.user.username = token.username
             return session
         },
@@ -140,15 +143,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 declare module "next-auth" {
     interface Session {
         error?: "RefreshAccessTokenError"
+        accessToken?: string
+        provider?: string
     }
 }
 
-declare module "next-auth/jwt" {
-    interface JWT {
-        accessToken?: string
-        refreshToken?: string
-        expiresAt?: number
-        error?: "RefreshAccessTokenError"
-        username?: string
-    }
-}
+// Note: next-auth/jwt types are problematic in v5 beta in this environment.
+// We are using @ts-ignore in the callbacks where necessary.

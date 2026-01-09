@@ -5,9 +5,12 @@ import { useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { syncGitHubWins } from '@/app/ingest-actions';
 import { ProcessingLog } from '@/lib/github';
+import { toast } from 'sonner';
 import { ResumeUploader } from '@/components/studio/ResumeUploader';
+import { useSession, signIn } from 'next-auth/react';
 
 export function SourcesPanel({ profile }: { profile: UserProfile }) {
+    const { data: session } = useSession();
     const providers = ['github', 'linkedin', 'slack', 'google'];
     const connected = new Set(profile.connectedProviders || []);
     const [isSyncing, setIsSyncing] = useState(false);
@@ -25,11 +28,21 @@ export function SourcesPanel({ profile }: { profile: UserProfile }) {
 
         try {
             const result = await syncGitHubWins();
+            if (!result.success) {
+                toast.error(result.error || "Sync failed");
+                if (result.error) {
+                    setLogs(prev => [...prev, { timestamp: new Date().toISOString(), level: 'error', message: result.error! }]);
+                }
+                return;
+            }
             if (result.logs) {
                 setLogs(result.logs);
+                toast.success(`Synced ${result.count} new items`);
             }
         } catch (e) {
-            setLogs(prev => [...prev, { timestamp: new Date().toISOString(), level: 'error', message: 'Sync failed.' }]);
+            console.error(e);
+            toast.error("Sync failed to connect to server");
+            setLogs(prev => [...prev, { timestamp: new Date().toISOString(), level: 'error', message: 'Sync failed (Network).' }]);
         } finally {
             setIsSyncing(false);
         }
@@ -83,40 +96,55 @@ export function SourcesPanel({ profile }: { profile: UserProfile }) {
 
                             {provider === 'github' && isConnected && (
                                 <div className="space-y-3">
-                                    {/* Preview Latest */}
-                                    <div className="bg-white border border-black/5 rounded p-2">
-                                        {profile.rawActivities && profile.rawActivities.filter(w => w.source === 'github').length > 0 ? (
-                                            <>
-                                                <div className="text-[10px] uppercase font-bold text-gray-400 mb-1">Latest Collected</div>
-                                                <div className="space-y-1">
-                                                    {profile.rawActivities
-                                                        .filter(w => w.source === 'github')
-                                                        .slice(0, 3)
-                                                        .map(w => (
-                                                            <div key={w.id} className="text-[10px] truncate border-b border-black/5 last:border-0 pb-1 last:pb-0 w-full min-w-0">
-                                                                {w.title.replace(/^Commit to .*?: /, '')}
+                                    {/* Session Check: If connected but not logged in via GitHub, warn user */}
+                                    {session?.provider !== 'github' ? (
+                                        <div className="bg-yellow-50 border border-yellow-200 rounded p-2 text-xs">
+                                            <p className="text-yellow-800 mb-2">Login with GitHub to sync.</p>
+                                            <button
+                                                onClick={() => signIn('github')}
+                                                className="w-full py-1 bg-yellow-100 text-yellow-800 font-bold rounded hover:bg-yellow-200 transition-colors"
+                                            >
+                                                Relogin
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            {/* Preview Latest */}
+                                            <div className="bg-white border border-black/5 rounded p-2">
+                                                {profile.rawActivities && profile.rawActivities.filter(w => w.source === 'github').length > 0 ? (
+                                                    <>
+                                                        <div className="text-[10px] uppercase font-bold text-gray-400 mb-1">Latest Collected</div>
+                                                        <div className="space-y-1">
+                                                            {profile.rawActivities
+                                                                .filter(w => w.source === 'github')
+                                                                .slice(0, 3)
+                                                                .map(w => (
+                                                                    <div key={w.id} className="text-[10px] truncate border-b border-black/5 last:border-0 pb-1 last:pb-0 w-full min-w-0">
+                                                                        {w.title.replace(/^Commit to .*?: /, '')}
+                                                                    </div>
+                                                                ))
+                                                            }
+                                                            <div className="text-[9px] text-gray-400 text-center pt-1">
+                                                                + {profile.rawActivities.filter(w => w.source === 'github').length - 3} more
                                                             </div>
-                                                        ))
-                                                    }
-                                                    <div className="text-[9px] text-gray-400 text-center pt-1">
-                                                        + {profile.rawActivities.filter(w => w.source === 'github').length - 3} more
-                                                    </div>
-                                                </div>
-                                            </>
-                                        ) : (
-                                            <div className="text-[10px] text-gray-400 italic">No data yet. Sync now.</div>
-                                        )}
-                                    </div>
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <div className="text-[10px] text-gray-400 italic">No data yet. Sync now.</div>
+                                                )}
+                                            </div>
 
-                                    <div className="flex gap-2">
-                                        <button
-                                            onClick={handleSync}
-                                            disabled={isSyncing}
-                                            className="flex-1 py-1.5 bg-black text-white text-xs font-bold rounded hover:opacity-80 disabled:opacity-50"
-                                        >
-                                            {isSyncing ? 'Scanning...' : 'Sync Now'}
-                                        </button>
-                                    </div>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={handleSync}
+                                                    disabled={isSyncing}
+                                                    className="flex-1 py-1.5 bg-black text-white text-xs font-bold rounded hover:opacity-80 disabled:opacity-50"
+                                                >
+                                                    {isSyncing ? 'Scanning...' : 'Sync Now'}
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                             )}
                             {provider === 'linkedin' && isConnected && (

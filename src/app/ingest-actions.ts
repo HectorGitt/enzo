@@ -9,7 +9,7 @@ import { parseLinkedInPDF } from '@/lib/linkedin-parser';
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
 
-export async function syncGitHubWins(): Promise<{ success: boolean, logs: ProcessingLog[], count: number }> {
+export async function syncGitHubWins(): Promise<{ success: boolean, logs: ProcessingLog[], count: number, error?: string }> {
     const session = await auth();
     // @ts-ignore
     const token = session?.accessToken as string;
@@ -19,7 +19,7 @@ export async function syncGitHubWins(): Promise<{ success: boolean, logs: Proces
     const email = session?.user?.email as string;
 
     if (!token || !username || !email) {
-        throw new Error("Not connected to GitHub");
+        return { success: false, logs: [], count: 0, error: "Not connected to GitHub" };
     }
 
     return await ingestGitHub(username, token, email);
