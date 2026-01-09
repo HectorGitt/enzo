@@ -3,6 +3,7 @@
 import { UserProfile, Skill } from '@/lib/schema';
 import { updateProfile } from '@/app/actions';
 import { Check, X, Loader2, Plus, Sparkles, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useState, useMemo } from 'react';
 
 export function SkillsModal({
@@ -76,7 +77,7 @@ export function SkillsModal({
             onClose();
         } catch (e) {
             console.error(e);
-            alert("Failed to save skills");
+            toast.error("Failed to save skills");
         }
         setIsSaving(false);
     };

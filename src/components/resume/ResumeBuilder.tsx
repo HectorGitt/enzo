@@ -11,6 +11,7 @@ import { SkillsModal } from './SkillsModal';
 import { ResumeUploader } from '@/components/studio/ResumeUploader';
 import { PDFPreview } from '@/components/resume/PDFPreview';
 import { GripVertical, Eye, EyeOff, Save, Loader2, ArrowUp, ArrowDown } from 'lucide-react';
+import { toast } from 'sonner';
 
 // Default config constant
 const DEFAULT_CONFIG: ResumeConfig = {
@@ -70,7 +71,7 @@ export function ResumeBuilder({ profile }: { profile: UserProfile }) {
             await updateProfile({ ...profile, resumeConfig: config });
         } catch (e) {
             console.error("Failed to save config", e);
-            alert("Failed to save configuration");
+            toast.error("Failed to save configuration");
         }
         setIsSaving(false);
     };
@@ -85,7 +86,7 @@ export function ResumeBuilder({ profile }: { profile: UserProfile }) {
             const t = await getTemplates(profile.email);
             setTemplates(t);
         } catch (e) {
-            alert("Failed to upload template");
+            toast.error("Failed to upload template");
         }
         setIsUploading(false);
     };
@@ -98,7 +99,7 @@ export function ResumeBuilder({ profile }: { profile: UserProfile }) {
             const tid = selectedTemplate === 'default' ? null : selectedTemplate;
             await generateResumeDocx(tid, profile);
         } catch (e) {
-            alert('Failed to generate DOCX');
+            toast.error('Failed to generate DOCX');
         }
     };
 

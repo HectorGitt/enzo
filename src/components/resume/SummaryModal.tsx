@@ -3,6 +3,7 @@
 import { UserProfile } from '@/lib/schema';
 import { updateProfile } from '@/app/actions';
 import { Check, X, Loader2, Edit2, Trash2, Plus } from 'lucide-react';
+import { toast } from 'sonner';
 import { useState } from 'react';
 
 export function SummaryModal({
@@ -75,7 +76,7 @@ export function SummaryModal({
             onClose();
         } catch (e) {
             console.error(e);
-            alert("Failed to save summaries");
+            toast.error("Failed to save summaries");
         }
         setIsSaving(false);
     };

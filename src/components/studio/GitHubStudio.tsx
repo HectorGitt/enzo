@@ -16,6 +16,7 @@ import {
     Loader2,
     Save
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 // Helper to filter/group wins by repo
 function useRepoData(activities: RawActivity[]) {
@@ -103,7 +104,7 @@ export function GitHubStudio({ profile }: { profile: UserProfile }) {
             if (result.success && result.bios) {
                 setGeneratedBios(result.bios);
             } else {
-                alert(`Error: ${result.error}`);
+                toast.error(`Error: ${result.error}`);
             }
         } else {
             // Highlight Mode
@@ -111,7 +112,7 @@ export function GitHubStudio({ profile }: { profile: UserProfile }) {
             if (result.success && result.wins) {
                 setGeneratedHighlights(result.wins);
             } else {
-                alert(`Error: ${result.error}`);
+                toast.error(`Error: ${result.error}`);
             }
         }
         setIsGenerating(false);
@@ -288,7 +289,7 @@ export function GitHubStudio({ profile }: { profile: UserProfile }) {
                                             onClick={async () => {
                                                 if (generatedBios) {
                                                     await updateProfile({ ...profile, bioVariations: generatedBios });
-                                                    alert("Saved all 3 variations to your Resume Builder!");
+                                                    toast.success("Saved all 3 variations to your Resume Builder!");
                                                     setGeneratedBios(null);
                                                 }
                                             }}

@@ -4,6 +4,7 @@ import { signIn } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { toast } from 'sonner';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -29,7 +30,7 @@ export default function LoginPage() {
         setLoading(false);
 
         if (result?.error) {
-            alert('Invalid credentials');
+            toast.error('Invalid credentials');
         } else {
             router.push('/dashboard');
             router.refresh();

@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { pdf } from '@react-pdf/renderer';
 import { ResumeDocument } from './ResumeDocument';
 import { Loader2, Download } from 'lucide-react';
+import { toast } from 'sonner';
 
 export function DownloadResume({ profile }: { profile: UserProfile }) {
     const [isGenerating, setIsGenerating] = useState(false);
@@ -38,7 +39,7 @@ export function DownloadResume({ profile }: { profile: UserProfile }) {
 
         } catch (e) {
             console.error("PDF Generation failed:", e);
-            alert("Failed to generate PDF. Please try again.");
+            toast.error("Failed to generate PDF. Please try again.");
         } finally {
             setIsGenerating(false);
         }

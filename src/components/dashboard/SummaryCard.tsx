@@ -4,6 +4,7 @@ import { UserProfile } from '@/lib/schema';
 import { updateProfile } from '@/app/actions';
 import { useState } from 'react';
 import { Edit2, Save, X, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 export function SummaryCard({ profile }: { profile: UserProfile }) {
     const [isEditing, setIsEditing] = useState(false);
@@ -17,7 +18,7 @@ export function SummaryCard({ profile }: { profile: UserProfile }) {
             setIsEditing(false);
         } catch (e) {
             console.error("Failed to save bio", e);
-            alert("Failed to save summary");
+            toast.error("Failed to save summary");
         }
         setIsSaving(false);
     };

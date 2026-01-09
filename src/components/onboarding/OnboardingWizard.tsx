@@ -1,4 +1,5 @@
 'use client';
+import { toast } from 'sonner';
 
 import { useState } from 'react';
 import { ingestLinkedIn, ingestGitHub } from '@/app/ingest-actions';
@@ -32,7 +33,7 @@ export function OnboardingWizard({ session }: OnboardingWizardProps) {
             router.refresh();
         } catch (e) {
             console.error(e);
-            alert("Failed to sync GitHub");
+            toast.error("Failed to sync GitHub");
         }
         setLoading(false);
     };

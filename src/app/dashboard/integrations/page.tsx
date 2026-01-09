@@ -5,6 +5,7 @@ import { signIn } from 'next-auth/react';
 import { fetchProfile } from '@/app/actions';
 import { UserProfile } from '@/lib/schema';
 import { BackendErrorState } from '@/components/BackendErrorState';
+import { toast } from 'sonner';
 
 export default function IntegrationsPage() {
     const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -128,7 +129,7 @@ function IntegrationCard({ name, description, icon, providerId, connected, onUpl
             }
         } catch (err) {
             console.error(err);
-            alert("Upload failed");
+            toast.error("Upload failed");
         } finally {
             setLoading(false);
             // potentially refresh parent
