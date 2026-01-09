@@ -153,3 +153,68 @@ export async function generateBioVariations(
         throw e;
     }
 }
+// ... existing code ...
+
+export async function generateResumeJSON(text: string) {
+    if (!API_KEY) throw new Error("Missing GEMINI_API_KEY");
+
+    const genAI = new GoogleGenerativeAI(API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); // Use 1.5 Flash for large context window
+
+    const prompt = `
+    You are an expert Data Extraction Agent. 
+    Extract the resume data from the following text into the exact JSON structure defined below.
+    
+    RESUME TEXT:
+    ${text.slice(0, 30000)}
+
+    TARGET JSON STRUCTURE:
+    {
+        "name": "string (Full Name)",
+        "title": "string (Current Job Title)",
+        "email": "string",
+        "phone": "string",
+        "location": "string",
+        "bio": "string (Professional Summary, max 500 chars)",
+        "skills": ["string (List of skills)"],
+        "experience": [
+            {
+                "company": "string",
+                "role": "string",
+                "startDate": "string (YYYY-MM or Present)",
+                "endDate": "string (YYYY-MM or Present)",
+                "current": boolean,
+                "description": "string (Bullet points combined into paragraph)",
+                "wins": ["string (Extract key achievements as list of strings)"]
+            }
+        ],
+        "education": [
+            {
+                "school": "string",
+                "degree": "string",
+                "startDate": "string (YYYY)",
+                "endDate": "string (YYYY)"
+            }
+        ]
+    }
+
+    Rules:
+    - If a field is not found, leave it as empty string or empty list.
+    - Standardize dates to YYYY-MM if possible.
+    - Return ONLY valid JSON.
+    `;
+
+    try {
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const responseText = response.text();
+
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error("No JSON found in response");
+
+        return JSON.parse(jsonMatch[0]);
+    } catch (e) {
+        console.error("Gemini Resume Parse Failed:", e);
+        throw e;
+    }
+}
