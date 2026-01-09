@@ -1,36 +1,103 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Enzo | The Live Resume 🚀
 
-## Getting Started
+> **End Career Amnesia.**  
+> Automatically sync your GitHub commits, PRs, and achievements into a living resume and portfolio.
 
-First, run the development server:
+Enzo is an autonomous professional identity platform. It connects to your engineering work stream (GitHub, etc.), analyzes your contributions to find "Wins", and helps you publish them as a perfect PDF resume or a public portfolio.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+![Enzo Homepage](public/enzo.png)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## ✨ Key Features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 1. **Smart Ingestion**
+- **GitHub Integration:** Automatically fetches commits and Pull Requests from your repositories.
+- **Private Repo Support:** Securely syncs work from private organizations via a GitHub App.
+- **Noise Filtering:** Distinguishes between "Fixed typo" and "Optimized API latency by 40%".
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 2. **The Data Studio**
+- **Kanban Workflow:** Drag-and-drop workflow to move raw data into your "Highlights".
+- **AI Refinement:** Use **Gemini 2.5 Flash** to rewrite raw commit logs into executive-ready bullet points and generate professional bio variations.
+- **Evidence Linking:** Every highlight links back to the original PR or commit diff.
 
-## Learn More
+### 3. **Resume Builder**
+- **Live Preview:** See changes instantly as you edit.
+- **Custom Templates:** 
+    - **PDF:** Built-in professional tech layout.
+    - **Word (.docx):** Upload **your own custom Word templates** with Jinja2 tags (e.g., `{{ name }}`, `{{ summary }}`) for pixel-perfect control.
+- **Section Management:** Reorder Experience, Education, Schools, and Skills with drag-and-drop.
+- **Version Control:** Save multiple "Bio Variations" to target different roles.
 
-To learn more about Next.js, take a look at the following resources:
+### 4. **Public Portfolio**
+- **Enzo.dev:** (Coming Soon) Your always-updated public career history link.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🛠 Tech Stack
 
-## Deploy on Vercel
+- **Frontend:** Next.js 14, Tailwind CSS, Framer Motion, Lucide Icons.
+- **Backend:** FastAPI (Python), SQLModel (SQLite).
+- **Auth:** NextAuth.js (GitHub, LinkedIn, Google, Slack).
+- **Templating:** `docxtpl` for Word generation.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+
+- Python 3.10+
+- GitHub OAuth App / GitHub App credentials
+
+### Installation
+
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/yourusername/enzo.git
+    cd enzo
+    ```
+
+2.  **Frontend Setup:**
+    ```bash
+    npm install
+    # Create .env.local with your auth credentials
+    npm run dev
+    ```
+
+3.  **Backend Setup:**
+    ```bash
+    cd backend
+    pip install -r requirements.txt
+    # OR manual install:
+    # pip install fastapi uvicorn sqlmodel docxtpl python-multipart
+    uvicorn main:app --reload --port 5000
+    ```
+
+4.  **Open the App:**
+    Navigate to [http://localhost:3000](http://localhost:3000).
+
+---
+
+## 📄 Word Template Guide
+
+Enzo supports custom `.docx` templates. To create one:
+1.  Open Word.
+2.  Use the following tags:
+    - `{{ name }}`, `{{ title }}`, `{{ email }}`, `{{ phone }}`, `{{ location }}`
+    - `{{ summary }}`
+    - `{{ skills }}`
+    - **Experience Loop:**
+        ```
+        {% for exp in experience %}
+        {{ exp.title }} at {{ exp.company }}
+        {{ exp.description }}
+        {% endfor %}
+        ```
+3.  Upload it in the **Resume Builder** > **Templates** panel.
+
+---
+
+## 🤝 Contributing
+
+This project is in **Open Beta**. Issues and PRs are welcome!
+
+License: MIT
