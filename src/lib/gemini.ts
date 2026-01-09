@@ -218,3 +218,87 @@ export async function generateResumeJSON(text: string) {
         throw e;
     }
 }
+
+export type GenerationType = 'overview' | 'strengths' | 'recommendations' | 'highlights' | 'custom';
+export type ToneType = 'professional' | 'casual' | 'enthusiastic' | 'executive' | 'bold';
+
+export interface GenerationConfig {
+    length: 'short' | 'medium' | 'long';
+    tone: ToneType;
+    customPrompt?: string;
+}
+
+export async function generateCustomContent(
+    context: string,
+    type: GenerationType,
+    config: GenerationConfig
+) {
+    if (!API_KEY) throw new Error("Missing GEMINI_API_KEY");
+
+    const genAI = new GoogleGenerativeAI(API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+    let promptTemplate = "";
+
+    switch (type) {
+        case 'overview':
+            promptTemplate = `
+            Create a comprehensive **Professional Overview** of the user's career based on the activity log.
+            Focus on career progression, key themes, and major technical achievements.
+            `;
+            break;
+        case 'strengths':
+            promptTemplate = `
+            Analyze the activity log to identify the user's **Top 5 Technical & Soft Skills**.
+            For each strength, provide specific evidence from the logs (e.g., "Demonstrated leadership by refactoring X").
+            `;
+            break;
+        case 'recommendations':
+            promptTemplate = `
+            Based on the code patterns and project types, suggest **3-5 Recommendations** for professional growth or resume positioning.
+            Example: "Consider highlighting your experience with X in your summary."
+            `;
+            break;
+        case 'highlights':
+            promptTemplate = `
+            Extract a list of **Key Highlights** formatted as bullet points for a resume.
+            `;
+            break;
+        case 'custom':
+            promptTemplate = config.customPrompt || "Analyze the context.";
+            break;
+    }
+
+    const lengthGuide = {
+        'short': 'Keep it concise (approx 100-200 words).',
+        'medium': 'Standard detail (approx 300-500 words).',
+        'long': 'In-depth analysis (approx 700+ words).'
+    };
+
+    const prompt = `
+    You are an expert Career Coach and Technical Resume Writer.
+    
+    CONTEXT (User's GitHub/Work Activity):
+    ${context}
+
+    TASK:
+    ${promptTemplate}
+
+    CONFIGURATION:
+    - Tone: ${config.tone}
+    - Length: ${lengthGuide[config.length]}
+    
+    OUTPUT FORMAT:
+    Return valid Markdown. Use bolding (#, ##) for structure.
+    Do NOT wrap in JSON. Return raw Markdown text.
+    `;
+
+    try {
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        return response.text();
+    } catch (e) {
+        console.error("Gemini Custom Gen Failed:", e);
+        throw e;
+    }
+}

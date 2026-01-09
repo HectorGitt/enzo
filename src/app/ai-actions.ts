@@ -1,7 +1,7 @@
 'use server';
 
 import { getProfile, saveProfile } from '@/lib/store';
-import { generateHighlightSummary, generateRepoRefinement, generateBioVariations } from '@/lib/gemini';
+import { generateHighlightSummary, generateRepoRefinement, generateBioVariations, generateCustomContent, GenerationType, GenerationConfig } from '@/lib/gemini';
 import { auth } from '@/auth';
 import { revalidatePath } from 'next/cache';
 import { Win } from '@/lib/schema';
@@ -107,6 +107,25 @@ export async function generateBioOptions(
         return { success: true, bios };
     } catch (e: any) {
         console.error(e);
+        return { success: false, error: e.message };
+    }
+}
+
+export async function generateCustomContentAction(
+    context: string,
+    type: GenerationType,
+    config: GenerationConfig
+) {
+    const session = await auth();
+    // @ts-ignore
+    const email = session?.user?.email as string;
+    if (!email) throw new Error("Unauthorized");
+
+    try {
+        const content = await generateCustomContent(context, type, config);
+        return { success: true, content };
+    } catch (e: any) {
+        console.error("Custom Gen Action Failed:", e);
         return { success: false, error: e.message };
     }
 }
