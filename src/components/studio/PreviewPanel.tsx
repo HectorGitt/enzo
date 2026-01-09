@@ -33,7 +33,7 @@ export function PreviewPanel({ profile }: { profile: UserProfile }) {
                         🌐
                     </div>
                     <h3 className="font-bold mb-1">Public Portfolio</h3>
-                    <p className="text-sm text-[var(--text-secondary)] mb-4">kairo.me/username</p>
+                    <p className="text-sm text-[var(--text-secondary)] mb-4">enzo.dev/username</p>
                     <Link href="/p/me" target="_blank" className="block w-full py-2 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-black/5 rounded-lg text-sm font-bold text-center hover:bg-black/5">
                         View Live Site
                     </Link>
