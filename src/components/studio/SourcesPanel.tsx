@@ -5,6 +5,7 @@ import { useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { syncGitHubWins } from '@/app/ingest-actions';
 import { ProcessingLog } from '@/lib/github';
+import { ResumeUploader } from '@/components/studio/ResumeUploader';
 
 export function SourcesPanel({ profile }: { profile: UserProfile }) {
     const providers = ['github', 'linkedin', 'slack', 'google'];
@@ -45,6 +46,9 @@ export function SourcesPanel({ profile }: { profile: UserProfile }) {
             </div>
 
             <div className="p-4 space-y-4 overflow-y-auto overflow-x-hidden flex-1">
+                {/* PDF Resume Import */}
+                <ResumeUploader profile={profile} />
+
                 {providers.map(provider => {
                     const isConnected = connected.has(provider);
                     return (

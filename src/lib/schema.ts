@@ -64,6 +64,8 @@ export interface UserProfile {
     id: string;
     name: string;
     email: string;
+    phone?: string;
+    location?: string;
     bio: string; // The "Master Bio"
     title: string; // e.g. "Senior Full Stack Engineeer"
     experience: Experience[];
