@@ -67,7 +67,7 @@ export async function generateRepoRefinement(
     User has contributed to a repository named "${repoName}".
     Here is the log of selected activities (commits/PRs):
     
-    ${activityContext.slice(0, 10000)} ${/* Limit context size */ ''}
+    ${activityContext}
     
     Task: Synthesize this activity into exactly ${count} high-impact "Highlights".
     Tone: ${tone}.
@@ -120,7 +120,7 @@ export async function generateBioVariations(
     Based on the following activity log, write distinct professional summaries (Bios) for the user's profile.
     
     Context:
-    ${activityContext.slice(0, 10000)}
+    ${activityContext}
 
     Task: Create exactly 3 variations of a Professional Bio (approx 3-4 sentences each).
     1. **The Professional**: Standard, polished, suited for enterprise roles.
