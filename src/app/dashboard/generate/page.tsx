@@ -6,11 +6,12 @@ import { getProfile } from '@/lib/store';
 import { useSession } from 'next-auth/react';
 import { generateCustomContentAction } from '@/app/ai-actions';
 import { GenerationConfig, GenerationType, ToneType } from '@/lib/gemini';
-import { Loader2, Sparkles, Copy, Check, ArrowLeft, RefreshCw } from 'lucide-react';
+import { updateProfile } from '@/app/actions';
+import { Loader2, Sparkles, Copy, Check, ArrowLeft, RefreshCw, Save, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
-import React from 'react';
+import React, { useRef } from 'react';
 
 export default function GeneratePage() {
     const { data: session } = useSession();
@@ -267,6 +268,51 @@ export default function GeneratePage() {
                             <div className="h-12 border-b border-gray-100 flex items-center justify-between px-4 bg-white/50 backdrop-blur-sm sticky top-0">
                                 <span className="text-xs font-bold text-gray-400 uppercase">Result</span>
                                 <div className="flex gap-2">
+                                    <SaveMenu
+                                        onSaveSummary={async () => {
+                                            if (!profile) return;
+                                            const oldBios = profile.bioVariations || [];
+                                            // Archive current bio if it exists and isn't already in variations
+                                            if (profile.bio && !oldBios.includes(profile.bio)) {
+                                                oldBios.unshift(profile.bio);
+                                            }
+
+                                            await updateProfile({
+                                                ...profile,
+                                                bio: result,
+                                                bioVariations: oldBios
+                                            });
+
+                                            // Update local state to reflect change immediately
+                                            setProfile({ ...profile, bio: result, bioVariations: oldBios });
+                                            toast.success("Saved as Professional Summary");
+                                        }}
+                                        onSaveHighlight={async () => {
+                                            if (!profile) return;
+                                            const newWin = {
+                                                id: crypto.randomUUID(),
+                                                title: `AI Generated ${genType}`,
+                                                source: 'manual' as const,
+                                                rawContent: result,
+                                                summary: result.slice(0, 200) + '...',
+                                                date: new Date().toISOString(),
+                                                tags: ['ai-generated', genType],
+                                                status: 'approved' as const,
+                                                showOnResume: true
+                                            };
+
+                                            // Optimistic update
+                                            const updatedWins = [...(profile.wins || []), newWin];
+                                            setProfile({ ...profile, wins: updatedWins });
+
+                                            await updateProfile({
+                                                ...profile,
+                                                wins: updatedWins
+                                            });
+                                            toast.success("Saved to Data Studio as Highlight");
+                                        }}
+                                    />
+
                                     <button
                                         onClick={handleGenerate}
                                         className="p-1.5 text-gray-400 hover:text-black hover:bg-gray-100 rounded transition-colors"
@@ -281,7 +327,7 @@ export default function GeneratePage() {
                                         `}
                                     >
                                         {copied ? <Check size={14} /> : <Copy size={14} />}
-                                        {copied ? 'Copied' : 'Copy Text'}
+                                        {copied ? 'Copied' : 'Copy'}
                                     </button>
                                 </div>
                             </div>
@@ -306,6 +352,54 @@ export default function GeneratePage() {
                     )}
                 </div>
             </div>
+        </div>
+    );
+}
+
+function SaveMenu({ onSaveSummary, onSaveHighlight }: { onSaveSummary: () => void, onSaveHighlight: () => void }) {
+    const [open, setOpen] = useState(false);
+    const menuRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                setOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    return (
+        <div className="relative" ref={menuRef}>
+            <button
+                onClick={() => setOpen(!open)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+                <Save size={14} />
+                Save as...
+                <ChevronDown size={12} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
+            </button>
+
+            {open && (
+                <div className="absolute top-full right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-50 animate-in fade-in zoom-in-95 duration-100">
+                    <button
+                        onClick={() => { onSaveSummary(); setOpen(false); }}
+                        className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
+                    >
+                        <strong>Professional Summary</strong>
+                        <div className="text-[10px] text-gray-400 font-normal">Update main profile bio</div>
+                    </button>
+                    <div className="h-px bg-gray-100 my-1" />
+                    <button
+                        onClick={() => { onSaveHighlight(); setOpen(false); }}
+                        className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
+                    >
+                        <strong>New Highlight</strong>
+                        <div className="text-[10px] text-gray-400 font-normal">Add to data studio wins</div>
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
