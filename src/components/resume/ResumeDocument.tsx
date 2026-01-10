@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
     skill: { backgroundColor: '#eee', padding: '2 6', borderRadius: 4, fontSize: 9 }
 });
 
-const SectionComponents: Record<string, (profile: UserProfile, styles: any) => JSX.Element | null> = {
+const SectionComponents: Record<string, (profile: UserProfile, styles: any) => React.ReactElement | null> = {
     summary: (profile, styles) => (
         <View style={{ marginTop: 8, marginBottom: 15 }}>
             <Text style={{ fontSize: 10, color: '#888', marginBottom: 2, textTransform: 'uppercase', fontWeight: 'bold' }}>Professional Summary</Text>
