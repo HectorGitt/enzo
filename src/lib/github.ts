@@ -23,6 +23,17 @@ export interface GitHubCommit {
     html_url: string;
 }
 
+export interface GitHubPR {
+    id: number;
+    title: string;
+    user: {
+        login: string;
+    };
+    html_url: string;
+    body: string | null;
+    merged_at: string;
+}
+
 export interface ProcessingLog {
     timestamp: string;
     level: 'info' | 'warn' | 'error';
