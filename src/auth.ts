@@ -4,9 +4,12 @@ import Google from "next-auth/providers/google"
 import LinkedIn from "next-auth/providers/linkedin"
 import Slack from "next-auth/providers/slack"
 import Credentials from "next-auth/providers/credentials"
-import { getProfile, saveProfile } from "./lib/store"
+import { getProfileByEmail, saveProfileToDB } from "./lib/profile-repository"
+
+import { authConfig } from "./auth.config"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+    ...authConfig,
     providers: [
         GitHub({
             clientId: process.env.GITHUB_ID,
@@ -36,8 +39,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 password: { label: "Password", type: "password" }
             },
             async authorize(credentials) {
-                // Mock authentication for MVP - allow any login
-                // In a real app, verify against DB
                 if (credentials?.email && credentials?.password) {
                     return {
                         id: "user_1",
@@ -50,12 +51,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             }
         })
     ],
-    theme: {
-        colorScheme: "dark",
-        brandColor: "#00f3ff",
-        logo: "", // TODO: Add logo URL
-    },
     callbacks: {
+        ...authConfig.callbacks,
         async jwt({ token, account, profile, user }) {
             // Initial sign in
             if (account) {
@@ -68,13 +65,35 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 // Track connected provider
                 if (user?.email) {
                     try {
-                        const userProfile = await getProfile(user.email);
+                        let userProfile = await getProfileByEmail(user.email);
+                        // If profile doesn't exist yet, we can create it or wait. 
+                        // But here we want to ensure 'connectedProviders' is set.
+                        // If null, we might defer to fetchProfile? 
+                        // Better to upsert minimal profile here to record the connection.
+
+                        if (!userProfile) {
+                            // Create new profile stub
+                            userProfile = {
+                                email: user.email,
+                                name: user.name || "New User",
+                                bio: "",
+                                title: "Professional",
+                                wins: [],
+                                experience: [],
+                                education: [],
+                                skills: [],
+                                publications: [],
+                                speaking: [],
+                                connectedProviders: []
+                            } as any; // Cast to avoid strict ID check if repo handles generation
+                        }
+
                         const providerId = account.provider;
-                        const currentProviders = userProfile.connectedProviders || [];
+                        const currentProviders = userProfile!.connectedProviders || [];
 
                         if (!currentProviders.includes(providerId)) {
-                            userProfile.connectedProviders = [...currentProviders, providerId];
-                            await saveProfile(userProfile);
+                            userProfile!.connectedProviders = [...currentProviders, providerId];
+                            await saveProfileToDB(userProfile!);
                         }
                     } catch (e) {
                         console.error("Failed to sync provider connection:", e);
@@ -132,10 +151,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             // @ts-ignore
             if (session.user) session.user.username = token.username
             return session
-        },
-        authorized: async ({ auth }) => {
-            // Logged in users are authenticated, otherwise redirect to login
-            return !!auth
         },
     },
 })

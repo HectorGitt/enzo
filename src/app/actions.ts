@@ -1,6 +1,6 @@
 'use server';
 
-import { getProfile, saveProfile } from '@/lib/store';
+import { getProfileByEmail, saveProfileToDB } from '@/lib/profile-repository';
 import { UserProfile } from '@/lib/schema';
 
 import { auth } from "@/auth";
@@ -8,11 +8,25 @@ import { auth } from "@/auth";
 export async function fetchProfile() {
     const session = await auth();
     const email = session?.user?.email || "user@example.com";
-    return await getProfile(email);
+    return await getProfileByEmail(email) || {
+        email,
+        name: session?.user?.name || "New User",
+        bio: "",
+        title: "Professional",
+        wins: [],
+        experience: [],
+        education: [],
+        skills: [],
+        publications: [],
+        speaking: [],
+        id: "",
+        connectedProviders: []
+    } as UserProfile;
 }
 
 export async function updateProfile(profile: UserProfile) {
-    await saveProfile(profile);
+    if (!profile.email) throw new Error("Profile email required");
+    await saveProfileToDB(profile);
     return { success: true };
 }
 export async function completeOnboarding() {
@@ -21,7 +35,7 @@ export async function completeOnboarding() {
 
     // Add a seed win to mark onboarding as complete
     profile.wins.push({
-        id: "seed_win",
+        id: crypto.randomUUID(),
         title: "Joined Enzo",
         source: "system",
         rawContent: "Started using Enzo to track my career.",

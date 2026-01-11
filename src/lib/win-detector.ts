@@ -51,7 +51,7 @@ export function analyzePR(pr: GitHubPR): Win | null {
 
     // 3. Construct Win
     return {
-        id: `github-${pr.id}`,
+        id: crypto.randomUUID(), // Valid UUID
         title: pr.title,
         source: 'github',
         rawContent: `PR: ${pr.title}\n${pr.html_url}\n\n${pr.body || ''}`,

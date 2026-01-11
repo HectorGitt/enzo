@@ -1,6 +1,6 @@
 'use server';
 
-import { getProfile, saveProfile } from '@/lib/store';
+import { getProfileByEmail, saveProfileToDB } from '@/lib/profile-repository';
 import { generateHighlightSummary, generateRepoRefinement, generateBioVariations, generateCustomContent, GenerationType, GenerationConfig } from '@/lib/gemini';
 import { auth } from '@/auth';
 import { revalidatePath } from 'next/cache';
@@ -19,7 +19,9 @@ export async function enhanceWinWithAI(winId: string, title: string, rawContent:
         const aiResult = await generateHighlightSummary(title, rawContent, source);
 
         // 2. Update DB
-        const profile = await getProfile(email);
+        const profile = await getProfileByEmail(email);
+        if (!profile) throw new Error("Profile not found");
+
         const winIndex = profile.wins.findIndex(w => w.id === winId);
 
         if (winIndex === -1) throw new Error("Highlight not found");
@@ -37,7 +39,7 @@ export async function enhanceWinWithAI(winId: string, title: string, rawContent:
         const newWins = [...profile.wins];
         newWins[winIndex] = updatedWin;
 
-        await saveProfile({
+        await saveProfileToDB({
             ...profile,
             wins: newWins
         });
@@ -65,10 +67,11 @@ export async function generateRepoHighlights(
 
     try {
         const highlights = await generateRepoRefinement(repoName, activityContext, tone, count);
-        const profile = await getProfile(email);
+        const profile = await getProfileByEmail(email);
+        if (!profile) throw new Error("Profile not found");
 
         const newWins: Win[] = highlights.map((h: any) => ({
-            id: `ai-gen-${crypto.randomUUID()}`,
+            id: crypto.randomUUID(),
             title: h.title,
             summary: h.summary,
             rawContent: `Generated from ${repoName} activity (AI)`,
@@ -78,7 +81,7 @@ export async function generateRepoHighlights(
             status: 'approved'
         }));
 
-        await saveProfile({
+        await saveProfileToDB({
             ...profile,
             wins: [...newWins, ...profile.wins] // Add to top
         });

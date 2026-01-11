@@ -15,6 +15,7 @@ export function SkillsSection({ profile }: { profile: UserProfile }) {
 
     const handleAdd = async () => {
         const skillToAdd: Skill = {
+            id: crypto.randomUUID(),
             name: newSkill.name || '',
             level: (newSkill.level || 1) as 1 | 2 | 3 | 4 | 5,
             category: newSkill.category || 'frontend'

@@ -27,7 +27,13 @@ function useRepoData(activities: RawActivity[]) {
         activities.forEach(act => {
             // Parse metadata
             let meta: any = {};
-            try { meta = JSON.parse(act.metadataJson); } catch { }
+            try {
+                if (typeof act.metadataJson === 'string') {
+                    meta = JSON.parse(act.metadataJson);
+                } else {
+                    meta = act.metadataJson;
+                }
+            } catch { }
 
             const repo = meta.repo || 'Unknown';
             if (!repoMap.has(repo)) repoMap.set(repo, { commits: [], prs: [] });

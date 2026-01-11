@@ -111,7 +111,7 @@ export async function fetchRecentPRs(username: string, token: string) {
 
 export function convertCommitToWin(commit: GitHubCommit, repoName: string): Win {
     return {
-        id: `commit-${commit.sha}`,
+        id: crypto.randomUUID(), // Valid UUID
         title: `Commit to ${repoName}: ${commit.commit.message.split('\n')[0]}`,
         source: 'github',
         rawContent: `${commit.commit.message}\n${commit.html_url}`,
@@ -129,7 +129,7 @@ export function convertPRToWin(pr: any): Win {
     const repoName = repoMatch ? repoMatch[1] : 'unknown-repo';
 
     return {
-        id: `github-${pr.id}`,
+        id: crypto.randomUUID(), // Valid UUID
         title: pr.title,
         source: 'github',
         rawContent: `PR: ${pr.title}\n${pr.html_url}\n\n${pr.body || ''}`,

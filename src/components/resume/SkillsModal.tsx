@@ -57,6 +57,7 @@ export function SkillsModal({
         if (skills.some(s => s.name.toLowerCase() === trimmed.toLowerCase())) return;
 
         const newSkill: Skill = {
+            id: crypto.randomUUID(),
             name: trimmed,
             category: 'other', // Default
             level: 3 // Default

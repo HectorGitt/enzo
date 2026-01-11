@@ -24,9 +24,13 @@ export function RepositoryExplorer({ activities }: { activities: RawActivity[] }
         activities.filter(a => a.source === 'github').forEach(act => {
             let meta: any = {};
             try {
-                meta = JSON.parse(act.metadataJson);
-            } catch (e) {
-                meta = { repo: 'Unknown', type: 'commit' };
+                if (typeof act.metadataJson === 'string') {
+                    meta = JSON.parse(act.metadataJson);
+                } else {
+                    meta = act.metadataJson;
+                }
+            } catch {
+                meta = { repo: 'Unknown', type: 'commit' }; // Fallback if parsing fails or metadataJson is not an object
             }
 
             const repoName = meta.repo || 'Unknown';

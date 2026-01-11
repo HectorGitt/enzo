@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { UserProfile } from '@/lib/schema';
 import { generateExport, ExportConfig } from '@/lib/export-engine';
 import { Download, FileText, FileJson, Table, RefreshCw, Copy, Check } from 'lucide-react';
-import { getProfile } from '@/lib/store';
+import { fetchProfile } from '@/app/actions';
 import { useSession } from 'next-auth/react';
 
 export default function ExportPage() {
@@ -37,7 +37,7 @@ export default function ExportPage() {
 
     useEffect(() => {
         if (session?.user?.email) {
-            getProfile(session.user.email).then(p => {
+            fetchProfile().then(p => {
                 setProfile(p);
                 setLoading(false);
             });

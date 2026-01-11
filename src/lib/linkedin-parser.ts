@@ -40,10 +40,10 @@ export async function parseLinkedInPDF(fileBuffer: ArrayBuffer): Promise<Partial
     ];
 
     const mockSkills: Skill[] = [
-        { name: "React", level: 5, category: "frontend" },
-        { name: "TypeScript", level: 4, category: "frontend" },
-        { name: "Node.js", level: 4, category: "backend" },
-        { name: "AWS", level: 3, category: "devops" }
+        { id: crypto.randomUUID(), name: "React", level: 5, category: "frontend" },
+        { id: crypto.randomUUID(), name: "TypeScript", level: 4, category: "frontend" },
+        { id: crypto.randomUUID(), name: "Node.js", level: 4, category: "backend" },
+        { id: crypto.randomUUID(), name: "AWS", level: 3, category: "devops" }
     ];
 
     return {

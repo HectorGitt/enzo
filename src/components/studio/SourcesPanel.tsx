@@ -64,11 +64,16 @@ export function SourcesPanel({ profile }: { profile: UserProfile }) {
 
                 {providers.map(provider => {
                     const isConnected = connected.has(provider);
+                    const isBeta = provider !== 'github';
+
                     return (
-                        <div key={provider} className={`p-4 rounded-lg border ${isConnected ? 'border-green-200 bg-green-50/30' : 'border-dashed border-black/10'}`}>
+                        <div key={provider} className={`p-4 rounded-lg border ${isConnected ? 'border-green-200 bg-green-50/30' : 'border-dashed border-black/10'} ${isBeta ? 'bg-gray-50/50' : ''}`}>
                             <div className="flex flex-wrap justify-between items-center gap-y-2 mb-2">
                                 <span className="capitalize font-bold flex items-center gap-2">
                                     {provider}
+                                    {isBeta && (
+                                        <span className="px-1.5 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-bold rounded-full uppercase tracking-wider">Beta</span>
+                                    )}
                                     {provider === 'github' && isConnected && (
                                         <div className="flex items-center gap-2">
                                             <a
@@ -90,9 +95,26 @@ export function SourcesPanel({ profile }: { profile: UserProfile }) {
                                 {isConnected ? (
                                     <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full shrink-0">Active</span>
                                 ) : (
-                                    <span className="text-[10px] text-[var(--text-muted)] shrink-0">Disconnected</span>
+                                    <span className={`text-[10px] shrink-0 ${isBeta ? 'text-purple-600 font-medium' : 'text-[var(--text-muted)]'}`}>
+                                        {isBeta ? 'Waitlist Open' : 'Disconnected'}
+                                    </span>
                                 )}
                             </div>
+
+                            {/* Beta Content */}
+                            {isBeta && !isConnected && (
+                                <div className="space-y-3">
+                                    <p className="text-xs text-gray-500">
+                                        We are currently fine-tuning {provider} integration. Get notified when it's ready.
+                                    </p>
+                                    <Link
+                                        href="/dashboard/settings"
+                                        className="block w-full text-center py-1.5 bg-purple-50 text-purple-700 border border-purple-100 text-xs font-bold rounded hover:bg-purple-100 transition-colors"
+                                    >
+                                        Join Beta Waitlist
+                                    </Link>
+                                </div>
+                            )}
 
                             {provider === 'github' && isConnected && (
                                 <div className="space-y-3">

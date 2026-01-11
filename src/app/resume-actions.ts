@@ -1,86 +1,187 @@
 'use server';
 
-import { generateResumeJSON } from '@/lib/gemini';
-// Polyfills for pdf-parse in Node.js environment
-// @ts-ignore
-if (typeof Promise.withResolvers === "undefined") {
-    // @ts-ignore
-    Promise.withResolvers = function () {
-        let resolve, reject;
-        const promise = new Promise((res, rej) => {
-            resolve = res;
-            reject = rej;
-        });
-        return { promise, resolve, reject };
-    };
-}
-
+import { getProfileByEmail } from '@/lib/profile-repository';
+import { db } from '@/lib/db';
+import { auth } from "@/auth";
+import fs from 'fs/promises';
+import path from 'path';
+import PizZip from 'pizzip';
+import Docxtemplater from 'docxtemplater';
+// Polyfill for pdf-parse (uses DOMMatrix which is missing in Node)
 // @ts-ignore
 if (typeof global.DOMMatrix === 'undefined') {
     // @ts-ignore
     global.DOMMatrix = class DOMMatrix {
-        constructor() { }
-        transformPoint(p: any) { return p; }
-    } as any;
-}
-// @ts-ignore
-if (typeof global.Path2D === 'undefined') {
-    // @ts-ignore
-    global.Path2D = class Path2D { constructor() { } } as any;
+        constructor() {
+            this.a = 1; this.b = 0; this.c = 0; this.d = 1; this.e = 0; this.f = 0;
+            this.m11 = 1; this.m12 = 0; this.m21 = 0; this.m22 = 1;
+            this.m31 = 0; this.m32 = 0;
+            this.m41 = 0; this.m42 = 0; this.m43 = 0; this.m44 = 1;
+        }
+    }
 }
 // @ts-ignore
 if (typeof global.ImageData === 'undefined') {
     // @ts-ignore
-    global.ImageData = class ImageData { constructor() { } } as any;
+    global.ImageData = class ImageData { constructor() { } };
+}
+// @ts-ignore
+if (typeof global.Path2D === 'undefined') {
+    // @ts-ignore
+    global.Path2D = class Path2D { constructor() { } };
 }
 
 // @ts-ignore
-const pdfModule = require('pdf-parse');
-// @ts-ignore
-const pdf = pdfModule.default || pdfModule;
+const pdf = require('pdf-parse');
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+const TEMPLATES_DIR = path.join(process.cwd(), 'templates');
+
+export async function uploadTemplateAction(formData: FormData) {
+    const session = await auth();
+    if (!session?.user?.email) throw new Error("Unauthorized");
+
+    const file = formData.get('file') as File;
+    const name = (formData.get('name') as string) || file.name;
+
+    if (!file) throw new Error("No file uploaded");
+
+    const buffer = Buffer.from(await file.arrayBuffer());
+
+    // Ensure dir exists
+    try { await fs.mkdir(TEMPLATES_DIR, { recursive: true }); } catch { }
+
+    const filename = `${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
+    const filepath = path.join(TEMPLATES_DIR, filename);
+
+    await fs.writeFile(filepath, buffer);
+
+    // Save to DB
+    const user = await getProfileByEmail(session.user.email);
+    if (!user) throw new Error("User not found");
+
+    const res = await db.query(`INSERT INTO "ResumeTemplate" (name, filename, "userId") VALUES ($1, $2, $3) RETURNING id`, [name, filename, user.id]);
+
+    return { success: true, id: res.rows[0].id };
+}
+
+export async function getTemplatesAction() {
+    const session = await auth();
+    if (!session?.user?.email) return [];
+
+    const user = await getProfileByEmail(session.user.email);
+    if (!user) return [];
+
+    const res = await db.query('SELECT * FROM "ResumeTemplate" WHERE "userId" = $1 ORDER BY "uploadDate" DESC', [user.id]);
+    return res.rows;
+}
+
+export async function generateResumeAction(templateId: string) {
+    const session = await auth();
+    if (!session?.user?.email) throw new Error("Unauthorized");
+
+    const user = await getProfileByEmail(session.user.email);
+    if (!user) throw new Error("User not found");
+
+    // Get Template
+    let templateFile = 'default.docx';
+    if (templateId) {
+        const tplRes = await db.query('SELECT * FROM "ResumeTemplate" WHERE id = $1', [templateId]);
+        if ((tplRes.rowCount || 0) > 0) {
+            templateFile = tplRes.rows[0].filename;
+        }
+    }
+
+    const filepath = path.join(TEMPLATES_DIR, templateFile);
+
+    // Check if file exists
+    try {
+        await fs.access(filepath);
+    } catch {
+        throw new Error(`Template file not found: ${filepath}`);
+    }
+
+    const content = await fs.readFile(filepath, 'binary');
+    const zip = new PizZip(content);
+    const doc = new Docxtemplater(zip, {
+        paragraphLoop: true,
+        linebreaks: true,
+    });
+
+    // Prepare Data (Flatten logic if needed to match Python context)
+    // Python might have passed 'profile' object fully.
+    // Docxtemplater needs strict access.
+
+    const data = {
+        profile: {
+            ...user,
+            // Ensure Wins, Experience etc are available
+            // If template uses {#profile.experience} ... {/profile.experience}
+        }
+    };
+
+    try {
+        doc.render(data);
+    } catch (error: any) {
+        throw new Error(`Template Render Error: ${JSON.stringify(error)}`);
+    }
+
+    const buf = doc.getZip().generate({
+        type: 'nodebuffer',
+        compression: 'DEFLATE',
+    });
+
+    // We return base64 string or we need a way to stream it?
+    // Server Actions returning Buffer is tricky. Usually return base64 string.
+    return { success: true, base64: buf.toString('base64'), filename: `resume-${user.name.replace(/\s+/g, '_')}.docx` };
+}
 
 export async function parseResumeAction(formData: FormData) {
     const file = formData.get('file') as File;
-    if (!file) {
-        return { success: false, error: "No file uploaded" };
-    }
+    if (!file) return { success: false, error: "No file provided" };
 
     try {
-        const arrayBuffer = await file.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
+        const buffer = Buffer.from(await file.arrayBuffer());
+        const data = await pdf(buffer);
+        const text = data.text;
 
-        // Extract text depending on file type
-        let text = "";
+        // Use Gemini to parse
+        const apiKey = process.env.GEMINI_API_KEY;
+        if (!apiKey) throw new Error("GEMINI_API_KEY not configured");
 
-        if (file.type === 'application/pdf') {
-            // console.log("Parsing PDF...", typeof pdf);
-            const data = await pdf(buffer);
-            text = data.text;
-        } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-            // For DOCX we might need 'mammoth' or similar, but simplified MVP can try basic text extraction or rely on PDF for now.
-            // The user prompt mentioned DOCX too.
-            // Installing 'mammoth' or 'officeparser' would be better for DOCX.
-            // For now, let's error if strictly only PDF implemented or try a simple parse if possible.
-            // But 'pdf-parse' only does PDF.
-            // Let's stick to PDF strictly for "Smart Ingestion" Phase 1 or assume we added a docx parser.
-            // Actually, implementation plan said "PDF/DOCX". 
-            // Let's stick to PDF for the "pdf-parse" step as per plan "Install pdf-parse".
-            // If user uploads DOCX, we might need another lib.
-            // Let's handle PDF first.
-            return { success: false, error: "Only PDF is supported for Smart Import currently." };
-        } else {
-            return { success: false, error: "Unsupported file type. Please upload a PDF." };
-        }
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-        if (!text || text.length < 50) {
-            return { success: false, error: "Could not extract text from file." };
-        }
+        const prompt = `
+        You are an expert resume parser. Extract the following information from the resume text below and return ONLY valid JSON.
+        
+        Fields to extract:
+        - name (string)
+        - email (string)
+        - phone (string)
+        - location (string)
+        - url (string, linkedin or portfolio)
+        - summary (string, professional summary)
+        - title (string, inferred job title)
+        - experience: array of objects { role, company, startDate, endDate, current (boolean), description, wins: string[] (extract bullet points as wins) }
+        - education: array of objects { school, degree, startDate, endDate }
+        - skills: array of strings
 
-        const data = await generateResumeJSON(text);
-        return { success: true, data };
+        Resume Text:
+        ${text.slice(0, 30000)}
+        `;
 
-    } catch (error) {
-        console.error("Parse Error:", error);
-        return { success: false, error: "Failed to parse resume" };
+        const result = await model.generateContent(prompt);
+        const response = result.response;
+        let textResponse = response.text();
+
+        // Clean markdown code blocks
+        textResponse = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+
+        const json = JSON.parse(textResponse);
+        return { success: true, data: json };
+    } catch (e: any) {
+        console.error("Parse Error:", e);
+        return { success: false, error: e.message || "Failed to parse" };
     }
 }

@@ -59,8 +59,10 @@ export default function IntegrationsPage() {
                     providerId="linkedin"
                     connected={isConnected('linkedin')}
                     onUpload={async (file: File) => {
-                        const { uploadLinkedInPdf } = await import('@/lib/store');
-                        await uploadLinkedInPdf(file, profile?.email || 'user@example.com');
+                        const { ingestLinkedIn } = await import('@/app/ingest-actions');
+                        const formData = new FormData();
+                        formData.append('file', file);
+                        await ingestLinkedIn(formData);
                     }}
                 />
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { UserProfile, RawActivity } from '@/lib/schema';
-import { getProfile } from '@/lib/store';
+import { fetchProfile } from '@/app/actions';
 import { useSession } from 'next-auth/react';
 import { generateCustomContentAction } from '@/app/ai-actions';
 import { GenerationConfig, GenerationType, ToneType } from '@/lib/gemini';
@@ -36,7 +36,7 @@ export default function GeneratePage() {
 
     useEffect(() => {
         if (session?.user?.email) {
-            getProfile(session.user.email).then(p => {
+            fetchProfile().then(p => {
                 setProfile(p);
                 setLoading(false);
             });

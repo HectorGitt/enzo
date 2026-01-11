@@ -2,6 +2,7 @@
 
 import { UserProfile, ResumeConfig } from '@/lib/schema';
 import { updateProfile } from '@/app/actions';
+import { getTemplatesAction, uploadTemplateAction, generateResumeAction } from '@/app/resume-actions';
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { DownloadResume } from '@/components/resume/DownloadResume';
@@ -36,13 +37,8 @@ export function ResumeBuilder({ profile }: { profile: UserProfile }) {
 
     // Initial Load
     useEffect(() => {
-        import('@/lib/store').then(async (mod) => {
-            try {
-                const t = await mod.getTemplates(profile.email);
-                setTemplates(t);
-            } catch { }
-        });
-    }, [profile.email]);
+        getTemplatesAction().then(setTemplates).catch(() => { });
+    }, []);
 
     // Create a local profile object that includes the current config ONLY for the preview
     // The Preview uses ResumeDocument which reads profile.resumeConfig
@@ -80,11 +76,13 @@ export function ResumeBuilder({ profile }: { profile: UserProfile }) {
         if (!e.target.files?.[0]) return;
         setIsUploading(true);
         try {
-            const { uploadTemplate, getTemplates } = await import('@/lib/store');
-            // uploadTemplate(file, userId)
-            await uploadTemplate(e.target.files[0], profile.email);
-            const t = await getTemplates(profile.email);
+            const formData = new FormData();
+            formData.append('file', e.target.files[0]);
+
+            await uploadTemplateAction(formData);
+            const t = await getTemplatesAction();
             setTemplates(t);
+            toast.success("Template uploaded successfully");
         } catch (e) {
             toast.error("Failed to upload template");
         }
@@ -93,12 +91,33 @@ export function ResumeBuilder({ profile }: { profile: UserProfile }) {
 
     const handleDownloadDocx = async () => {
         try {
-            const { generateResumeDocx } = await import('@/lib/store');
-            // generateResumeDocx(templateId, profile)
-            // templateId is selectedTemplate (or null if "default")
-            const tid = selectedTemplate === 'default' ? null : selectedTemplate;
-            await generateResumeDocx(tid, profile);
+            const tid = selectedTemplate === 'default' ? 'default' : selectedTemplate;
+            const res = await generateResumeAction(tid);
+
+            if (res.success && res.base64) {
+                // Convert Base64 to Blob
+                const binaryString = window.atob(res.base64);
+                const bytes = new Uint8Array(binaryString.length);
+                for (let i = 0; i < binaryString.length; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                const blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+
+                // Trigger Download
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = res.filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } else {
+                throw new Error("Generation failed");
+            }
+
         } catch (e) {
+            console.error(e);
             toast.error('Failed to generate DOCX');
         }
     };

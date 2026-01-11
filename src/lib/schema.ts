@@ -29,6 +29,7 @@ export interface Education {
 }
 
 export interface Skill {
+    id: string; // Added for DB
     name: string;
     category: 'frontend' | 'backend' | 'devops' | 'soft' | 'other';
     level: 1 | 2 | 3 | 4 | 5; // 1: Beginner, 5: Expert
@@ -49,6 +50,13 @@ export interface SpeakingEngagement {
     event: string;
     date: string;
     link?: string;
+}
+
+export interface ResumeTemplate {
+    id: string;
+    name: string;
+    filename: string;
+    uploadDate: string; // ISO String
 }
 
 export interface ResumeConfig {
@@ -80,6 +88,11 @@ export interface UserProfile {
     rawActivities?: RawActivity[]; // Separate ingest data
     resumeConfig?: ResumeConfig;
     bioVariations?: string[]; // Saved AI generated bios
+    syncSettings?: {
+        frequency: 'daily' | 'weekly' | 'manual';
+        syncTypes: string[]; // e.g. ['commits', 'pr', 'slack_messages']
+        betaFeatures: boolean;
+    };
 }
 
 export interface RawActivity {

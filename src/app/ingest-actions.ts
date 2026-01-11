@@ -1,6 +1,6 @@
 'use server';
 
-import { getProfile, saveProfile } from '@/lib/store';
+import { getProfileByEmail, saveProfileToDB } from '@/lib/profile-repository';
 import { UserProfile, Win } from '@/lib/schema';
 import { fetchRecentPRs, fetchAllRepos, fetchRecentCommits, convertPRToWin, convertCommitToWin, ProcessingLog } from '@/lib/github';
 import { analyzePR } from '@/lib/win-detector';
@@ -26,18 +26,45 @@ export async function syncGitHubWins(): Promise<{ success: boolean, logs: Proces
 }
 
 export async function ingestLinkedIn(formData: FormData) {
-    const partialProfile = await parseLinkedInPDF(new ArrayBuffer(0));
-    const currentProfile = await getProfile();
+    const session = await auth();
+    const email = session?.user?.email;
+    if (!email) throw new Error("Unauthorized");
+
+    const partialProfile = await parseLinkedInPDF(new ArrayBuffer(0)); // Note: Parsing logic actually needs the file buffer from formData
+    // The previous code had `new ArrayBuffer(0)` which looks like a placeholder or bug?
+    // Assuming `parseLinkedInPDF` handles the buffer extraction or we need to extract it here.
+
+    // Extract buffer from formData
+    const file = formData.get('file') as File;
+    let buffer = new ArrayBuffer(0);
+    if (file) {
+        buffer = await file.arrayBuffer();
+    }
+
+    // Re-call parser with real buffer if needed, but sticking to existing logic flow if parser handles it.
+    // Actually `parseLinkedInPDF` expects a buffer according to usage context.
+    // I will pass the real buffer.
+    const realPartialProfile = await parseLinkedInPDF(buffer);
+
+    const currentProfile = await getProfileByEmail(email) || {
+        email,
+        name: session?.user?.name || "New User",
+        id: "",
+        bio: "",
+        title: "Professional",
+        connectedProviders: [],
+        wins: [], experience: [], education: [], skills: [], publications: [], speaking: []
+    } as UserProfile;
 
     const updatedProfile: UserProfile = {
         ...currentProfile,
-        ...partialProfile,
-        experience: [...currentProfile.experience, ...(partialProfile.experience || [])],
-        education: [...currentProfile.education, ...(partialProfile.education || [])],
-        skills: [...currentProfile.skills, ...(partialProfile.skills || [])]
-    };
+        ...realPartialProfile,
+        experience: [...(currentProfile.experience || []), ...(realPartialProfile.experience || [])],
+        education: [...(currentProfile.education || []), ...(realPartialProfile.education || [])],
+        skills: [...(currentProfile.skills || []), ...(realPartialProfile.skills || [])]
+    } as UserProfile;
 
-    await saveProfile(updatedProfile);
+    await saveProfileToDB(updatedProfile);
     return { success: true };
 }
 
@@ -76,7 +103,7 @@ export async function ingestGitHub(username: string, token: string, email: strin
                         log(`[${repo.name}] Found ${commits.length} commits`, "info");
                         // Convert to RawActivity format
                         const commitActivities = commits.map(c => ({
-                            id: `raw-commit-${c.sha}`,
+                            id: crypto.randomUUID(), // Use valid UUID
                             source: 'github',
                             externalId: c.sha,
                             title: `Commit to ${repo.name}: ${c.commit.message.split('\n')[0]}`,
@@ -106,7 +133,7 @@ export async function ingestGitHub(username: string, token: string, email: strin
             const repoMatch = pr.html_url.match(/github\.com\/[^\/]+\/([^\/]+)/);
             const repoName = repoMatch ? repoMatch[1] : 'unknown-repo';
             return {
-                id: `raw-pr-${pr.id}`,
+                id: crypto.randomUUID(), // Use valid UUID
                 source: 'github',
                 externalId: String(pr.id),
                 title: pr.title,
@@ -123,7 +150,8 @@ export async function ingestGitHub(username: string, token: string, email: strin
         newActivities = [...newActivities, ...prActivities];
 
         // 4. Save to Profile
-        const currentProfile = await getProfile(email);
+        const currentProfile = await getProfileByEmail(email);
+        if (!currentProfile) throw new Error("Profile not found");
 
         // Dedup against existing rawActivities
         const existingIds = new Set((currentProfile.rawActivities || []).map(a => a.id));
@@ -132,7 +160,7 @@ export async function ingestGitHub(username: string, token: string, email: strin
         log(`Identified ${uniqueActivities.length} new raw activities.`, "info");
 
         if (uniqueActivities.length > 0) {
-            await saveProfile({
+            await saveProfileToDB({
                 ...currentProfile,
                 rawActivities: [...uniqueActivities, ...(currentProfile.rawActivities || [])],
                 lastSyncLog: JSON.stringify(logs)
@@ -142,7 +170,7 @@ export async function ingestGitHub(username: string, token: string, email: strin
             revalidatePath('/dashboard/studio');
         } else {
             log("No new raw data to save.", "info");
-            await saveProfile({
+            await saveProfileToDB({
                 ...currentProfile,
                 lastSyncLog: JSON.stringify(logs)
             });
@@ -155,11 +183,13 @@ export async function ingestGitHub(username: string, token: string, email: strin
         log(`Sync failed: ${e.message}`, "error");
         // Try to save logs on error too
         try {
-            const currentProfile = await getProfile(email);
-            await saveProfile({
-                ...currentProfile,
-                lastSyncLog: JSON.stringify(logs)
-            });
+            const currentProfile = await getProfileByEmail(email);
+            if (currentProfile) {
+                await saveProfileToDB({
+                    ...currentProfile,
+                    lastSyncLog: JSON.stringify(logs)
+                });
+            }
         } catch { }
         return { success: false, count: 0, logs };
     }
