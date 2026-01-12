@@ -23,21 +23,20 @@ Enzo is an autonomous professional identity platform. It connects to your engine
 - **Live Preview:** See changes instantly as you edit.
 - **Custom Templates:** 
     - **PDF:** Built-in professional tech layout.
-    - **Word (.docx):** Upload **your own custom Word templates** with Jinja2 tags (e.g., `{{ name }}`, `{{ summary }}`) for pixel-perfect control.
+    - **Word (.docx):** Upload **your own custom Word templates** using standard tags (e.g., `{name}`, `{summary}`) for pixel-perfect control.
 - **Section Management:** Reorder Experience, Education, Schools, and Skills with drag-and-drop.
 - **Version Control:** Save multiple "Bio Variations" to target different roles.
 
 ### 4. **Public Portfolio**
-- **Enzo.dev:** (Coming Soon) Your always-updated public career history link.
+- **Live Profiles:** Claim your unique username (e.g., `enzo.dev/p/yourname`) and share your verified career history with the world.
+- **Verified Badges:** Show off verified commits and LinkedIn activity with trust badges.
 
----
+### 5. **Library & Saved Content**
+- **Content Management:** Save generated bios, cover letters, and highlights to your personal library for easy reuse.
 
-## 🛠 Tech Stack
-
-- **Frontend:** Next.js 14, Tailwind CSS, Framer Motion, Lucide Icons.
-- **Backend:** FastAPI (Python), SQLModel (SQLite).
-- **Auth:** NextAuth.js (GitHub, LinkedIn, Google, Slack).
-- **Templating:** `docxtpl` for Word generation.
+### 5. **Beta Program & Waitlist**
+- **Integration Waitlist:** Users can sign up for early access to Slack, Google Calendar, and LinkedIn activity syncing directly from the dashboard.
+- **Direct Database Persistence:** Robust state management ensures your beta status is saved instantly.
 
 ---
 
@@ -45,8 +44,8 @@ Enzo is an autonomous professional identity platform. It connects to your engine
 
 ### Prerequisites
 - Node.js 18+
-- Python 3.10+
-- GitHub OAuth App / GitHub App credentials
+- PostgreSQL Database
+- GitHub OAuth App credentials
 
 ### Installation
 
@@ -63,13 +62,11 @@ Enzo is an autonomous professional identity platform. It connects to your engine
     npm run dev
     ```
 
-3.  **Backend Setup:**
+3.  **Database Setup:**
     ```bash
-    cd backend
-    pip install -r requirements.txt
-    # OR manual install:
-    # pip install fastapi uvicorn sqlmodel docxtpl python-multipart
-    uvicorn main:app --reload --port 5000
+    # Ensure you have a PostgreSQL instance running
+    # Run the consolidated migration script
+    npm run db:migrate
     ```
 
 4.  **Open the App:**
@@ -81,16 +78,16 @@ Enzo is an autonomous professional identity platform. It connects to your engine
 
 Enzo supports custom `.docx` templates. To create one:
 1.  Open Word.
-2.  Use the following tags:
-    - `{{ name }}`, `{{ title }}`, `{{ email }}`, `{{ phone }}`, `{{ location }}`
-    - `{{ summary }}`
-    - `{{ skills }}`
+2.  Use the following tags (curly braces):
+    - `{name}`, `{title}`, `{email}`, `{phone}`, `{location}`
+    - `{summary}`
+    - `{skills}`
     - **Experience Loop:**
         ```
-        {% for exp in experience %}
-        {{ exp.title }} at {{ exp.company }}
-        {{ exp.description }}
-        {% endfor %}
+        {#experience}
+        {title} at {company}
+        {description}
+        {/experience}
         ```
 3.  Upload it in the **Resume Builder** > **Templates** panel.
 
