@@ -11,7 +11,13 @@ import Docxtemplater from 'docxtemplater';
 // @ts-ignore
 if (typeof global.DOMMatrix === 'undefined') {
     // @ts-ignore
+    // @ts-ignore
     global.DOMMatrix = class DOMMatrix {
+        a: number; b: number; c: number; d: number; e: number; f: number;
+        m11: number; m12: number; m21: number; m22: number;
+        m31: number; m32: number;
+        m41: number; m42: number; m43: number; m44: number;
+
         constructor() {
             this.a = 1; this.b = 0; this.c = 0; this.d = 1; this.e = 0; this.f = 0;
             this.m11 = 1; this.m12 = 0; this.m21 = 0; this.m22 = 1;

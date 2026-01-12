@@ -38,7 +38,14 @@ export async function getProfileByEmail(email: string): Promise<UserProfile | nu
         connectedProviders: parseJSON(user.connectedProviders),
         lastSyncLog: parseJSON(user.lastSyncLog),
         resumeConfig: parseJSON(user.resumeConfig),
-        bioVariations: parseJSON(user.bioVariations),
+        bioVariations: (() => {
+            const parsed = parseJSON(user.bioVariations);
+            if (Array.isArray(parsed)) return parsed;
+            // Handle double-stringification or malformed data
+            try { return typeof parsed === 'string' ? JSON.parse(parsed) : []; } catch { return []; }
+        })(),
+        socials: parseJSON(user.socials),
+        waitlist: parseJSON(user.waitlist) || [],
 
         // Relations
         wins: wins.rows.map((row: any) => ({ ...row, tags: parseJSON(row.tags) })),
@@ -52,72 +59,89 @@ export async function getProfileByEmail(email: string): Promise<UserProfile | nu
     } as UserProfile;
 }
 
-export async function saveProfileToDB(profile: UserProfile): Promise<boolean> {
-    // Upsert User
-    // Note: We assume ID exists if we are updating. If not, we insert.
-    // For simplicity, we use ON CONFLICT (email) DO UPDATE
+export async function getProfileByUsername(username: string): Promise<UserProfile | null> {
+    const userRes = await db.query('SELECT * FROM "UserProfile" WHERE username = $1', [username]);
+    if (userRes.rowCount === 0) return null;
 
-    // Convert arrays/objects to JSON strings for DB
+    const user = userRes.rows[0];
+    const userId = user.id;
+
+    // Fetch public relations
+    const [wins, exp, edu, skills, pubs, speaking] = await Promise.all([
+        db.query('SELECT * FROM "Win" WHERE "userId" = $1', [userId]),
+        db.query('SELECT * FROM "Experience" WHERE "userId" = $1', [userId]),
+        db.query('SELECT * FROM "Education" WHERE "userId" = $1', [userId]),
+        db.query('SELECT * FROM "Skill" WHERE "userId" = $1', [userId]),
+        db.query('SELECT * FROM "Publication" WHERE "userId" = $1', [userId]),
+        db.query('SELECT * FROM "SpeakingEngagement" WHERE "userId" = $1', [userId]),
+    ]);
+
+    return {
+        ...user,
+        connectedProviders: [], // Hide private data
+        lastSyncLog: null,     // Hide logs
+        resumeConfig: parseJSON(user.resumeConfig),
+        socials: parseJSON(user.socials),
+
+        wins: wins.rows.map((row: any) => ({ ...row, tags: parseJSON(row.tags) })),
+        experience: exp.rows.map((row: any) => ({ ...row, wins: parseJSON(row.wins) })),
+        education: edu.rows,
+        skills: skills.rows,
+        publications: pubs.rows,
+        speaking: speaking.rows,
+        // Raw activities might be too much for public, but maybe needed for verification drill-down?
+        // Let's exclude them for now to keep payload light, unless specifically requested.
+        rawActivities: [],
+    } as UserProfile;
+}
+
+export async function saveProfileToDB(profile: UserProfile): Promise<boolean> {
+    // 1. Prepare JSON fields
     const connectedProviders = stringifyJSON(profile.connectedProviders);
     const lastSyncLog = stringifyJSON(profile.lastSyncLog);
     const resumeConfig = stringifyJSON(profile.resumeConfig);
     const bioVariations = stringifyJSON(profile.bioVariations);
+    const socials = stringifyJSON(profile.socials);
+    const waitlist = stringifyJSON(profile.waitlist);
 
-    const userQuery = `
-        INSERT INTO "UserProfile" (id, name, email, phone, location, bio, title, "portfolioRepo", "connectedProviders", "lastSyncLog", "resumeConfig", "bioVariations", "updatedAt")
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())
-        ON CONFLICT (email) DO UPDATE SET
-            name = EXCLUDED.name,
-            phone = EXCLUDED.phone,
-            location = EXCLUDED.location,
-            bio = EXCLUDED.bio,
-            title = EXCLUDED.title,
-            "portfolioRepo" = EXCLUDED."portfolioRepo",
-            "connectedProviders" = EXCLUDED."connectedProviders",
-            "lastSyncLog" = EXCLUDED."lastSyncLog",
-            "resumeConfig" = EXCLUDED."resumeConfig",
-            "bioVariations" = EXCLUDED."bioVariations",
-            "updatedAt" = NOW()
-        RETURNING id;
-    `;
+    // DEBUG LOG
+    const fs = require('fs');
+    fs.appendFileSync('db_debug.log', `[${new Date().toISOString()}] Saving Profile: ${profile.email}\n`);
+    fs.appendFileSync('db_debug.log', `Waitlist Input: ${JSON.stringify(profile.waitlist)}\n`);
+    fs.appendFileSync('db_debug.log', `Waitlist Stringified: ${waitlist}\n`);
 
-    // We use a predefined UUID if user doesn't have one? 
-    // Usually fetching profile gets ID. If creating, generate one.
-    // In SQL 'default uuid_generate_v4()' handles missing ID, but if we pass it, it uses it.
-    // profile.id might be empty string from frontend defaults? logic check needed.
-    const userIdParam = (profile.id && profile.id.length > 5) ? profile.id : undefined;
-    // If undefined, we can't pass it to INSERT if explicit ID required? 
-    // Postgres generated ID needs explicit DEFAULT keyword or omit column.
-    // We'll manage this logic: check if exists.
-
-    let userId = userIdParam;
-
-    // Simplified logic: Check if user exists first
-    const existing = await db.query('SELECT id FROM "UserProfile" WHERE email = $1', [profile.email]);
-    if ((existing.rowCount || 0) > 0 && !userId) {
-        userId = existing.rows[0].id;
+    // 2. Resolve User ID (Check existing by email)
+    let userId = profile.id;
+    if (!userId || userId.length < 5) {
+        const existing = await db.query('SELECT id FROM "UserProfile" WHERE email = $1', [profile.email]);
+        if (existing.rowCount && existing.rowCount > 0) {
+            userId = existing.rows[0].id;
+        }
     }
 
-    // If we have ID, do Upsert. If not, Insert without ID (let DB generate) and get ID back.
-    if (!userId || userId === "") {
+    // 3. Upsert User Profile
+    if (!userId || userId.length < 5) {
+        // First time insert
         const res = await db.query(`
-            INSERT INTO "UserProfile" (name, email, phone, location, bio, title, "portfolioRepo", "connectedProviders", "lastSyncLog", "resumeConfig", "bioVariations", "updatedAt")
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW()) RETURNING id`,
-            [profile.name, profile.email, profile.phone, profile.location, profile.bio, profile.title, profile.portfolioRepo, connectedProviders, lastSyncLog, resumeConfig, bioVariations]
+            INSERT INTO "UserProfile" (name, username, email, phone, location, bio, title, "portfolioRepo", "connectedProviders", "lastSyncLog", "resumeConfig", "bioVariations", "socials", "waitlist", "updatedAt")
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW()) 
+            RETURNING id`,
+            [profile.name, profile.username, profile.email, profile.phone, profile.location, profile.bio, profile.title, profile.portfolioRepo, connectedProviders, lastSyncLog, resumeConfig, bioVariations, socials, waitlist]
         );
         userId = res.rows[0].id;
     } else {
+        // Update existing
         await db.query(`
             UPDATE "UserProfile" SET
-            name = $2, phone = $3, location = $4, bio = $5, title = $6,
-            "portfolioRepo" = $7, "connectedProviders" = $8, "lastSyncLog" = $9,
-            "resumeConfig" = $10, "bioVariations" = $11, "updatedAt" = NOW()
+            name = $2, username = $3, phone = $4, location = $5, bio = $6, title = $7,
+            "portfolioRepo" = $8, "connectedProviders" = $9, "lastSyncLog" = $10,
+            "resumeConfig" = $11, "bioVariations" = $12, "socials" = $13, "waitlist" = $14, "updatedAt" = NOW()
             WHERE id = $1`,
-            [userId, profile.name, profile.phone, profile.location, profile.bio, profile.title, profile.portfolioRepo, connectedProviders, lastSyncLog, resumeConfig, bioVariations]
+            [userId, profile.name, profile.username, profile.phone, profile.location, profile.bio, profile.title, profile.portfolioRepo, connectedProviders, lastSyncLog, resumeConfig, bioVariations, socials, waitlist]
         );
     }
 
-    if (!userId) throw new Error("Failed to get User ID");
+    if (!userId) throw new Error("Failed to resolve User ID");
 
     // Relations: Full Replace Strategy (Delete all for user, then re-insert)
     // This connects to the "SQLModel" behavior which was replacing items lists.

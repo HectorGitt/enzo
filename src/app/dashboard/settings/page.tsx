@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { fetchProfile, updateProfile } from '@/app/actions';
+import { joinWaitlistAction } from '@/app/waitlist-actions';
 import { UserProfile } from '@/lib/schema';
-import { Loader2, Save, Bell, Check, AlertCircle } from 'lucide-react';
+import { Loader2, Save, Bell, Check, AlertCircle, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function SettingsPage() {
@@ -14,7 +15,8 @@ export default function SettingsPage() {
     // Form State
     const [frequency, setFrequency] = useState<'daily' | 'weekly' | 'manual'>('manual');
     const [syncTypes, setSyncTypes] = useState<string[]>(['github']);
-    const [betaNotified, setBetaNotified] = useState(false);
+    // const [betaNotified, setBetaNotified] = useState(false); // Removed in favor of DB waitlist
+    const [username, setUsername] = useState('');
 
     useEffect(() => {
         fetchProfile().then(p => {
@@ -23,6 +25,7 @@ export default function SettingsPage() {
                 setFrequency(p.syncSettings.frequency);
                 setSyncTypes(p.syncSettings.syncTypes);
             }
+            if (p.username) setUsername(p.username);
             setLoading(false);
         });
     }, []);
@@ -33,11 +36,13 @@ export default function SettingsPage() {
         try {
             const updatedProfile = {
                 ...profile,
+                username, // Save username
                 syncSettings: {
                     frequency,
                     syncTypes,
-                    betaFeatures: betaNotified
-                }
+                    betaFeatures: false // Deprecated/Managed by waitlist now
+                },
+                socials: profile.socials
             };
             await updateProfile(updatedProfile);
             setProfile(updatedProfile);
@@ -47,12 +52,6 @@ export default function SettingsPage() {
         } finally {
             setSaving(false);
         }
-    };
-
-    const handleNotifyMe = () => {
-        setBetaNotified(true);
-        toast.success("You're on the list! We'll notify you when beta features are ready.");
-        handleSave(); // implicit save or just local state? Let's save it.
     };
 
     if (loading) return <div className="flex h-screen items-center justify-center"><Loader2 className="animate-spin" /></div>;
@@ -74,8 +73,91 @@ export default function SettingsPage() {
                 </button>
             </div>
 
-            {/* Sync Settings */}
+            {/* Public Profile Settings */}
             <section className="bg-white rounded-xl border border-black/5 p-6 space-y-6">
+                <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                    </div>
+                    <h2 className="text-lg font-bold">Public Profile</h2>
+                </div>
+
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-2">Username</label>
+                        <div className="flex items-center gap-2">
+                            <span className="text-gray-400 font-mono text-sm">enzo.app/p/</span>
+                            <input
+                                type="text"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                                placeholder="your-username"
+                                className="flex-1 bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-sm font-mono focus:ring-2 focus:ring-black/5 outline-none transition-all"
+                            />
+                        </div>
+                        <p className="text-xs text-gray-400 mt-2">
+                            This is your unique handle for your public resume. Only letters, numbers, and hyphens.
+                        </p>
+                    </div>
+                    {username && (
+                        <div className="text-sm">
+                            <a href={`/p/${username}`} target="_blank" className="text-blue-600 hover:underline flex items-center gap-1">
+                                View Public Profile <ExternalLink size={12} />
+                            </a>
+                        </div>
+                    )}
+                </div>
+
+
+                <div className="pt-6 border-t border-black/5">
+                    <label className="block text-sm font-bold text-gray-700 mb-4">Social Links</label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs uppercase text-gray-400 mb-1">GitHub URL</label>
+                            <input
+                                type="text"
+                                value={profile?.socials?.github || ''}
+                                onChange={(e) => setProfile(p => p ? { ...p, socials: { ...p.socials, github: e.target.value } } : null)}
+                                placeholder="https://github.com/username"
+                                className="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 text-sm outline-none focus:border-black/20"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs uppercase text-gray-400 mb-1">LinkedIn URL</label>
+                            <input
+                                type="text"
+                                value={profile?.socials?.linkedin || ''}
+                                onChange={(e) => setProfile(p => p ? { ...p, socials: { ...p.socials, linkedin: e.target.value } } : null)}
+                                placeholder="https://linkedin.com/in/username"
+                                className="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 text-sm outline-none focus:border-black/20"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs uppercase text-gray-400 mb-1">X / Twitter URL</label>
+                            <input
+                                type="text"
+                                value={profile?.socials?.twitter || ''}
+                                onChange={(e) => setProfile(p => p ? { ...p, socials: { ...p.socials, twitter: e.target.value } } : null)}
+                                placeholder="https://x.com/username"
+                                className="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 text-sm outline-none focus:border-black/20"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs uppercase text-gray-400 mb-1">Website</label>
+                            <input
+                                type="text"
+                                value={profile?.socials?.website || ''}
+                                onChange={(e) => setProfile(p => p ? { ...p, socials: { ...p.socials, website: e.target.value } } : null)}
+                                placeholder="https://yoursite.com"
+                                className="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 text-sm outline-none focus:border-black/20"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </section >
+
+            {/* Sync Settings */}
+            < section className="bg-white rounded-xl border border-black/5 p-6 space-y-6" >
                 <div className="flex items-center gap-3 mb-4">
                     <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
@@ -119,63 +201,131 @@ export default function SettingsPage() {
                                 </div>
                             </label>
 
-                            <label className="flex items-center gap-3 p-3 border border-gray-100 rounded-lg opacity-60 cursor-not-allowed bg-gray-50/50">
-                                <input type="checkbox" disabled className="w-4 h-4 text-gray-300 rounded" />
-                                <div className="flex-1">
+                            {/* Slack - Beta */}
+                            <div className={`flex items-center justify-between gap-3 p-3 border rounded-lg transition-all ${profile?.waitlist?.includes('slack')
+                                ? 'bg-purple-50 border-purple-200'
+                                : 'bg-white border-gray-100'
+                                }`}>
+                                <div>
                                     <div className="flex items-center gap-2">
                                         <span className="text-sm font-medium">Slack Messages</span>
                                         <span className="px-1.5 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-bold rounded-full uppercase">Beta</span>
                                     </div>
                                     <span className="text-xs text-gray-400">Direct messages and mentions</span>
                                 </div>
-                            </label>
-                            <label className="flex items-center gap-3 p-3 border border-gray-100 rounded-lg opacity-60 cursor-not-allowed bg-gray-50/50">
-                                <input type="checkbox" disabled className="w-4 h-4 text-gray-300 rounded" />
-                                <div className="flex-1">
+
+                                {profile?.waitlist?.includes('slack') ? (
+                                    <div className="flex items-center gap-1.5 text-xs font-bold text-green-600 bg-green-50 px-3 py-1.5 rounded-full border border-green-100">
+                                        <Check size={14} />
+                                        <span>On the list</span>
+                                    </div>
+                                ) : (
+                                    <button
+                                        onClick={() => {
+                                            toast.promise(joinWaitlistAction('slack'), {
+                                                loading: 'Joining...',
+                                                success: (data) => {
+                                                    if (data.success) {
+                                                        window.location.reload();
+                                                        return 'Joined Slack waitlist';
+                                                    }
+                                                    throw new Error(data.error);
+                                                },
+                                                error: 'Failed to join'
+                                            });
+                                        }}
+                                        className="text-xs font-bold bg-black text-white px-3 py-1.5 rounded-full hover:opacity-80 transition-opacity"
+                                    >
+                                        Notify Me
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Google - Beta */}
+                            <div className={`flex items-center justify-between gap-3 p-3 border rounded-lg transition-all ${profile?.waitlist?.includes('google')
+                                ? 'bg-purple-50 border-purple-200'
+                                : 'bg-white border-gray-100'
+                                }`}>
+                                <div>
                                     <div className="flex items-center gap-2">
                                         <span className="text-sm font-medium">Google Calendar</span>
                                         <span className="px-1.5 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-bold rounded-full uppercase">Beta</span>
                                     </div>
                                     <span className="text-xs text-gray-400">Meetings and events</span>
                                 </div>
-                            </label>
+
+                                {profile?.waitlist?.includes('google') ? (
+                                    <div className="flex items-center gap-1.5 text-xs font-bold text-green-600 bg-green-50 px-3 py-1.5 rounded-full border border-green-100">
+                                        <Check size={14} />
+                                        <span>On the list</span>
+                                    </div>
+                                ) : (
+                                    <button
+                                        onClick={() => {
+                                            toast.promise(joinWaitlistAction('google'), {
+                                                loading: 'Joining...',
+                                                success: (data) => {
+                                                    if (data.success) {
+                                                        window.location.reload();
+                                                        return 'Joined Google waitlist';
+                                                    }
+                                                    throw new Error(data.error);
+                                                },
+                                                error: 'Failed to join'
+                                            });
+                                        }}
+                                        className="text-xs font-bold bg-black text-white px-3 py-1.5 rounded-full hover:opacity-80 transition-opacity"
+                                    >
+                                        Notify Me
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* LinkedIn - Beta */}
+                            <div className={`flex items-center justify-between gap-3 p-3 border rounded-lg transition-all ${profile?.waitlist?.includes('linkedin')
+                                ? 'bg-purple-50 border-purple-200'
+                                : 'bg-white border-gray-100'
+                                }`}>
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm font-medium">LinkedIn Activity</span>
+                                        <span className="px-1.5 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-bold rounded-full uppercase">Beta</span>
+                                    </div>
+                                    <span className="text-xs text-gray-400">Posts and engagement metrics</span>
+                                </div>
+
+                                {profile?.waitlist?.includes('linkedin') ? (
+                                    <div className="flex items-center gap-1.5 text-xs font-bold text-green-600 bg-green-50 px-3 py-1.5 rounded-full border border-green-100">
+                                        <Check size={14} />
+                                        <span>On the list</span>
+                                    </div>
+                                ) : (
+                                    <button
+                                        onClick={() => {
+                                            toast.promise(joinWaitlistAction('linkedin'), {
+                                                loading: 'Joining...',
+                                                success: (data) => {
+                                                    if (data.success) {
+                                                        window.location.reload();
+                                                        return 'Joined LinkedIn waitlist';
+                                                    }
+                                                    throw new Error(data.error);
+                                                },
+                                                error: 'Failed to join'
+                                            });
+                                        }}
+                                        className="text-xs font-bold bg-black text-white px-3 py-1.5 rounded-full hover:opacity-80 transition-opacity"
+                                    >
+                                        Notify Me
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
-            </section>
+            </section >
 
-            {/* Beta Program */}
-            <section className="bg-gradient-to-br from-purple-50 to-white rounded-xl border border-purple-100 p-6">
-                <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-purple-100 text-purple-600 rounded-lg">
-                        <AlertCircle className="w-5 h-5" />
-                    </div>
-                    <div>
-                        <h2 className="text-lg font-bold text-purple-900">Beta Features Program</h2>
-                        <p className="text-xs text-purple-600">Get early access to new integrations.</p>
-                    </div>
-                </div>
 
-                <div className="flex flex-col md:flex-row gap-6 items-center">
-                    <div className="flex-1 text-sm text-gray-600">
-                        <p className="mb-2">We are currently testing integrations for <strong>Slack</strong>, <strong>LinkedIn</strong>, and <strong>Google Workspace</strong>.</p>
-                        <p>Join the waitlist to be notified immediately when these features become available for your account.</p>
-                    </div>
-                    <button
-                        onClick={handleNotifyMe}
-                        disabled={betaNotified}
-                        className={`px-6 py-3 rounded-xl font-bold transition-all flex items-center gap-2
-                            ${betaNotified
-                                ? 'bg-green-100 text-green-700 cursor-default'
-                                : 'bg-purple-600 text-white hover:bg-purple-700 shadow-lg shadow-purple-200'
-                            }
-                        `}
-                    >
-                        {betaNotified ? <Check size={18} /> : <Bell size={18} />}
-                        {betaNotified ? "You're on the list!" : "Notify me when added"}
-                    </button>
-                </div>
-            </section>
-        </div>
+        </div >
     );
 }

@@ -7,6 +7,7 @@ import { useSession } from 'next-auth/react';
 import { generateCustomContentAction } from '@/app/ai-actions';
 import { GenerationConfig, GenerationType, ToneType } from '@/lib/gemini';
 import { updateProfile } from '@/app/actions';
+import { saveContentAction } from '@/app/content-actions';
 import { Loader2, Sparkles, Copy, Check, ArrowLeft, RefreshCw, Save, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -19,6 +20,7 @@ export default function GeneratePage() {
     const [loading, setLoading] = useState(true);
     const [generating, setGenerating] = useState(false);
     const [result, setResult] = useState('');
+    const [viewMode, setViewMode] = useState<'preview' | 'raw'>('preview');
     const [copied, setCopied] = useState(false);
 
     // Filter Config
@@ -265,14 +267,28 @@ export default function GeneratePage() {
                     {result ? (
                         <div className="flex-1 bg-white rounded-2xl border border-black/5 shadow-sm flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
                             {/* Toolbar */}
-                            <div className="h-12 border-b border-gray-100 flex items-center justify-between px-4 bg-white/50 backdrop-blur-sm sticky top-0">
+                            <div className="h-12 border-b border-gray-100 flex items-center justify-between px-4 bg-white/50 backdrop-blur-sm sticky top-0 z-10">
                                 <span className="text-xs font-bold text-gray-400 uppercase">Result</span>
                                 <div className="flex gap-2">
+                                    <div className="flex bg-gray-100 rounded-lg p-0.5 mr-2">
+                                        <button
+                                            onClick={() => setViewMode('preview')}
+                                            className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${viewMode === 'preview' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                        >
+                                            Preview
+                                        </button>
+                                        <button
+                                            onClick={() => setViewMode('raw')}
+                                            className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${viewMode === 'raw' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                        >
+                                            Raw
+                                        </button>
+                                    </div>
+
                                     <SaveMenu
                                         onSaveSummary={async () => {
                                             if (!profile) return;
                                             const oldBios = profile.bioVariations || [];
-                                            // Archive current bio if it exists and isn't already in variations
                                             if (profile.bio && !oldBios.includes(profile.bio)) {
                                                 oldBios.unshift(profile.bio);
                                             }
@@ -283,7 +299,6 @@ export default function GeneratePage() {
                                                 bioVariations: oldBios
                                             });
 
-                                            // Update local state to reflect change immediately
                                             setProfile({ ...profile, bio: result, bioVariations: oldBios });
                                             toast.success("Saved as Professional Summary");
                                         }}
@@ -301,7 +316,6 @@ export default function GeneratePage() {
                                                 showOnResume: true
                                             };
 
-                                            // Optimistic update
                                             const updatedWins = [...(profile.wins || []), newWin];
                                             setProfile({ ...profile, wins: updatedWins });
 
@@ -310,6 +324,19 @@ export default function GeneratePage() {
                                                 wins: updatedWins
                                             });
                                             toast.success("Saved to Data Studio as Highlight");
+                                        }}
+                                        onSaveLibrary={async () => {
+                                            try {
+                                                await saveContentAction({
+                                                    type: 'raw',
+                                                    content: result,
+                                                    title: `${genType} - ${new Date().toLocaleDateString()}`,
+                                                    tags: [genType, config.tone]
+                                                });
+                                                toast.success("Saved to Library");
+                                            } catch (e) {
+                                                toast.error("Failed to save to library");
+                                            }
                                         }}
                                     />
 
@@ -332,11 +359,17 @@ export default function GeneratePage() {
                                 </div>
                             </div>
 
-                            {/* Markdown Content */}
-                            <div className="flex-1 overflow-y-auto p-8 font-serif leading-relaxed text-gray-800">
-                                <article className="prose prose-sm md:prose-base lg:prose-lg max-w-none prose-headings:font-sans prose-headings:font-bold prose-h1:text-purple-900 prose-h2:text-gray-800 prose-a:text-purple-600 hover:prose-a:text-purple-500 prose-strong:text-purple-700">
-                                    <ReactMarkdown>{result}</ReactMarkdown>
-                                </article>
+                            {/* Content Area */}
+                            <div className="flex-1 overflow-y-auto p-8 text-gray-800">
+                                {viewMode === 'preview' ? (
+                                    <article className="prose prose-sm md:prose-base lg:prose-lg max-w-none prose-headings:font-sans prose-headings:font-bold prose-h1:text-purple-900 prose-h2:text-gray-800 prose-a:text-purple-600 hover:prose-a:text-purple-500 prose-strong:text-purple-700 font-serif leading-relaxed">
+                                        <ReactMarkdown>{result}</ReactMarkdown>
+                                    </article>
+                                ) : (
+                                    <pre className="font-mono text-xs md:text-sm whitespace-pre-wrap text-gray-600 bg-gray-50 p-4 rounded-lg border border-gray-100">
+                                        {result}
+                                    </pre>
+                                )}
                             </div>
                         </div>
                     ) : (
@@ -356,7 +389,20 @@ export default function GeneratePage() {
     );
 }
 
-function SaveMenu({ onSaveSummary, onSaveHighlight }: { onSaveSummary: () => void, onSaveHighlight: () => void }) {
+
+
+// ... (existing imports, no changes)
+
+// Inside GeneratePage component:
+// No changes needed to GeneratePage logic, passing onSaveLibrary down
+
+// Inside SaveMenu component:
+
+function SaveMenu({ onSaveSummary, onSaveHighlight, onSaveLibrary }: {
+    onSaveSummary: () => void,
+    onSaveHighlight: () => void,
+    onSaveLibrary: () => void
+}) {
     const [open, setOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
@@ -398,8 +444,33 @@ function SaveMenu({ onSaveSummary, onSaveHighlight }: { onSaveSummary: () => voi
                         <strong>New Highlight</strong>
                         <div className="text-[10px] text-gray-400 font-normal">Add to data studio wins</div>
                     </button>
+                    <div className="h-px bg-gray-100 my-1" />
+                    <button
+                        onClick={() => { onSaveLibrary(); setOpen(false); }}
+                        className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
+                    >
+                        <strong>Save to Library</strong>
+                        <div className="text-[10px] text-gray-400 font-normal">Save purely as content</div>
+                    </button>
                 </div>
             )}
         </div>
     );
 }
+
+// Inside GeneratePage render return:
+// <SaveMenu
+//      onSaveSummary={...}
+//      onSaveHighlight={...}
+//      onSaveLibrary={async () => {
+//          try {
+//              await saveContentAction({
+//                  type: 'raw', // or based on generation type
+//                  content: result,
+//                  title: `${genType} - ${new Date().toLocaleDateString()}`,
+//                  tags: [genType, config.tone]
+//              });
+//              toast.success("Saved to Library");
+//          } catch (e) { toast.error("Failed to save"); }
+//      }}
+// />

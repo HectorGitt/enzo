@@ -7,6 +7,7 @@ import { UserProfile, Experience, Education } from '@/lib/schema';
 // For now, we'll just implement the Experience section specifically
 
 import { updateProfile } from '@/app/actions';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 
 export function ExperienceSection({ profile }: { profile: UserProfile }) {
     const [experience, setExperience] = useState<Experience[]>(profile.experience || []);
@@ -14,6 +15,7 @@ export function ExperienceSection({ profile }: { profile: UserProfile }) {
     const [newJob, setNewJob] = useState<Partial<Experience>>({
         current: false,
     });
+    const [deleteId, setDeleteId] = useState<string | null>(null);
 
     const handleAdd = async () => {
         const newExp: Experience = {
@@ -31,6 +33,14 @@ export function ExperienceSection({ profile }: { profile: UserProfile }) {
         setIsAdding(false);
         setNewJob({ current: false });
 
+        await updateProfile({ ...profile, experience: updated });
+    };
+
+    const handleDelete = async () => {
+        if (!deleteId) return;
+        const updated = experience.filter(e => e.id !== deleteId);
+        setExperience(updated);
+        setDeleteId(null);
         await updateProfile({ ...profile, experience: updated });
     };
 
@@ -53,15 +63,35 @@ export function ExperienceSection({ profile }: { profile: UserProfile }) {
 
             <div className="space-y-6">
                 {experience.map(exp => (
-                    <div key={exp.id} className="relative pl-6 border-l border-black/10">
+                    <div key={exp.id} className="relative pl-6 border-l border-black/10 group">
                         <div className="absolute left-[-5px] top-2 w-2.5 h-2.5 rounded-full bg-[var(--accent-purple)]" />
-                        <h3 className="font-bold text-lg">{exp.role}</h3>
-                        <p className="text-[var(--accent-cyan)] text-sm mb-2">{exp.company} • {exp.startDate}</p>
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <h3 className="font-bold text-lg">{exp.role}</h3>
+                                <p className="text-[var(--accent-cyan)] text-sm mb-2">{exp.company} • {exp.startDate}</p>
+                            </div>
+                            <button
+                                onClick={() => setDeleteId(exp.id)}
+                                className="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity text-xs"
+                            >
+                                Delete
+                            </button>
+                        </div>
                         <p className="text-sm text-[var(--text-secondary)]">{exp.description}</p>
                     </div>
                 ))}
                 {experience.length === 0 && <p className="text-[var(--text-muted)] italic">No experience listed.</p>}
             </div>
+
+            <ConfirmModal
+                isOpen={!!deleteId}
+                onClose={() => setDeleteId(null)}
+                onConfirm={handleDelete}
+                title="Delete Experience"
+                message="Are you sure you want to delete this role from your profile? This action cannot be undone."
+                isDestructive
+                confirmText="Delete Role"
+            />
         </div>
     );
 }

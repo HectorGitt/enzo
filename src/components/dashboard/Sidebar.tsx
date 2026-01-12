@@ -2,19 +2,28 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { fetchProfile } from '@/app/actions';
+import { useState, useEffect } from 'react';
 import { SignOutButton } from '@/components/auth/SignOutButton';
 
 export function DashboardSidebar() {
     const pathname = usePathname();
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const [username, setUsername] = useState<string | null>(null);
+
+    useEffect(() => {
+        fetchProfile().then(p => {
+            if (p?.username) setUsername(p.username);
+        });
+    }, []);
 
     return (
         <aside className={`${isCollapsed ? 'w-20' : 'w-64'} border-r border-black/5 bg-[var(--bg-secondary)] flex flex-col h-screen sticky top-0 transition-all duration-300 ease-in-out`}>
             <div className={`p-6 border-b border-black/5 flex ${isCollapsed ? 'justify-center' : 'justify-between'} items-center`}>
                 {!isCollapsed && (
-                    <Link href="/" className="text-2xl font-bold tracking-tighter text-[var(--text-primary)]">
-                        ENZO
+                    <Link href="/" className="text-2xl font-bold tracking-tighter text-[var(--text-primary)] flex items-center gap-2">
+                        <img src="/enzo.png" alt="Enzo" className="w-8 h-8 rounded-lg" />
+                        <span>ENZO</span>
                     </Link>
                 )}
                 <button
@@ -66,6 +75,13 @@ export function DashboardSidebar() {
                     active={pathname === '/dashboard/generate'}
                     collapsed={isCollapsed}
                 />
+                <NavItem
+                    href="/dashboard/library"
+                    label="Library"
+                    icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>}
+                    active={pathname === '/dashboard/library'}
+                    collapsed={isCollapsed}
+                />
 
                 <div className={`pt-4 border-t border-black/5 mt-4 ${isCollapsed ? 'flex flex-col items-center' : ''}`}>
                     <NavItem
@@ -89,13 +105,18 @@ export function DashboardSidebar() {
                         active={pathname === '/dashboard/settings'}
                         collapsed={isCollapsed}
                     />
-                    <NavItem
-                        href="/p/me"
-                        label="View Portfolio"
-                        icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>}
-                        external
-                        collapsed={isCollapsed}
-                    />
+
+                    {username && (
+                        <div className="pt-4 mt-2 border-t border-black/5">
+                            <NavItem
+                                href={`/p/${username}`}
+                                label="View Portfolio"
+                                icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>}
+                                external
+                                collapsed={isCollapsed}
+                            />
+                        </div>
+                    )}
                 </div>
             </nav>
 

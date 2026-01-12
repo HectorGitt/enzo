@@ -17,7 +17,7 @@ export function SummaryModal({
     // We treat the current 'bio' as just another option, but marked 'active'
     const [options, setOptions] = useState<string[]>([
         profile.bio || "",
-        ...(profile.bioVariations || [])
+        ...(Array.isArray(profile.bioVariations) ? profile.bioVariations : [])
     ].filter(s => s.trim().length > 0)); // Filter empty
 
     const [selectedIndex, setSelectedIndex] = useState<number>(0);

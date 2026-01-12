@@ -56,7 +56,8 @@ export default function LoginPage() {
 
             <div className="glass-panel w-full max-w-md p-8 relative z-10">
                 <div className="text-center mb-8">
-                    <Link href="/" className="text-2xl font-bold tracking-tighter text-[var(--text-primary)] hover:opacity-80 transition-opacity">
+                    <Link href="/" className="text-2xl font-bold tracking-tighter text-[var(--text-primary)] hover:opacity-80 transition-opacity flex flex-col items-center gap-2">
+                        <img src="/enzo.png" alt="Enzo" className="w-12 h-12 rounded-xl shadow-lg" />
                         Enzo
                     </Link>
                     <h1 className="text-xl font-bold mt-4 mb-2">Welcome Back</h1>

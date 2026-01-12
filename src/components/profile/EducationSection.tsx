@@ -3,13 +3,13 @@
 import { useState } from 'react';
 import { UserProfile, Education } from '@/lib/schema';
 import { updateProfile } from '@/app/actions';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 
 export function EducationSection({ profile }: { profile: UserProfile }) {
     const [education, setEducation] = useState<Education[]>(profile.education || []);
     const [isAdding, setIsAdding] = useState(false);
     const [newEdu, setNewEdu] = useState<Partial<Education>>({});
-    const [school, setSchool] = useState('');
-    const [graduationDate, setGraduationDate] = useState('');
+    const [deleteId, setDeleteId] = useState<string | null>(null);
 
     const handleAdd = async () => {
         const newEduItem: Education = {
@@ -22,6 +22,14 @@ export function EducationSection({ profile }: { profile: UserProfile }) {
         setEducation(updated);
         setIsAdding(false);
         setNewEdu({});
+        await updateProfile({ ...profile, education: updated });
+    };
+
+    const handleDelete = async () => {
+        if (!deleteId) return;
+        const updated = education.filter(e => e.id !== deleteId);
+        setEducation(updated);
+        setDeleteId(null);
         await updateProfile({ ...profile, education: updated });
     };
 
@@ -43,14 +51,32 @@ export function EducationSection({ profile }: { profile: UserProfile }) {
 
             <div className="space-y-4">
                 {education.map(edu => (
-                    <div key={edu.id} className="p-4 border border-black/5 rounded bg-white/40">
-                        <h3 className="font-bold">{edu.school}</h3>
-                        <p className="text-[var(--text-secondary)] text-sm">{edu.degree}</p>
-                        <p className="text-[var(--text-muted)] text-xs">{edu.graduationDate}</p>
+                    <div key={edu.id} className="p-4 border border-black/5 rounded bg-white/40 flex justify-between items-start group">
+                        <div>
+                            <h3 className="font-bold">{edu.school}</h3>
+                            <p className="text-[var(--text-secondary)] text-sm">{edu.degree}</p>
+                            <p className="text-[var(--text-muted)] text-xs">{edu.graduationDate}</p>
+                        </div>
+                        <button
+                            onClick={() => setDeleteId(edu.id)}
+                            className="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity text-xs"
+                        >
+                            Delete
+                        </button>
                     </div>
                 ))}
                 {education.length === 0 && <p className="text-[var(--text-muted)] italic">No education listed.</p>}
             </div>
-        </div>
+
+            <ConfirmModal
+                isOpen={!!deleteId}
+                onClose={() => setDeleteId(null)}
+                onConfirm={handleDelete}
+                title="Delete Education"
+                message="Are you sure you want to delete this education entry? This action cannot be undone."
+                isDestructive
+                confirmText="Delete Entry"
+            />
+        </div >
     );
 }

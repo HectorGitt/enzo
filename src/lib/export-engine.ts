@@ -127,7 +127,11 @@ Your goal is to use this context to generate cover letters, resume bullets, or a
         const repoMap = new Map<string, RawActivity[]>();
         data.rawActivities?.filter((a: RawActivity) => a.source === 'github').forEach((act: RawActivity) => {
             let meta: any = {};
-            try { meta = JSON.parse(act.metadataJson); } catch { }
+            if (typeof act.metadataJson === 'string') {
+                try { meta = JSON.parse(act.metadataJson); } catch { }
+            } else {
+                meta = act.metadataJson || {};
+            }
             const repo = meta.repo || 'Unknown';
             if (!repoMap.has(repo)) repoMap.set(repo, []);
             repoMap.get(repo)!.push(act);
@@ -139,8 +143,16 @@ Your goal is to use this context to generate cover letters, resume bullets, or a
             parts.push(`## Repository: ${repo}`);
 
             // Infer stats
-            const commits = acts.filter(a => JSON.parse(a.metadataJson || '{}').type === 'commit');
-            const prs = acts.filter(a => JSON.parse(a.metadataJson || '{}').type === 'pr');
+            // Helper to safely get metadata
+            const getMeta = (a: RawActivity) => {
+                if (typeof a.metadataJson === 'string') {
+                    try { return JSON.parse(a.metadataJson); } catch { return {}; }
+                }
+                return a.metadataJson || {};
+            };
+
+            const commits = acts.filter(a => getMeta(a).type === 'commit');
+            const prs = acts.filter(a => getMeta(a).type === 'pr');
 
             if (config.sources.github.stats) {
                 parts.push(`**Stats:** ${commits.length} Commits, ${prs.length} Pull Requests`);
@@ -188,7 +200,11 @@ function generateCSV(profile: UserProfile, config: ExportConfig): string {
     // Activities
     data.rawActivities?.forEach((act: RawActivity) => {
         let meta: any = {};
-        try { meta = JSON.parse(act.metadataJson); } catch { }
+        if (typeof act.metadataJson === 'string') {
+            try { meta = JSON.parse(act.metadataJson); } catch { }
+        } else {
+            meta = act.metadataJson || {};
+        }
         rows.push([
             meta.type || 'activity',
             act.date,

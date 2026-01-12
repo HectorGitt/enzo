@@ -4,6 +4,7 @@ import { UserProfile } from '@/lib/schema';
 import { useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { syncGitHubWins } from '@/app/ingest-actions';
+import { joinWaitlistAction } from '@/app/waitlist-actions';
 import { ProcessingLog } from '@/lib/github';
 import { toast } from 'sonner';
 import { ResumeUploader } from '@/components/studio/ResumeUploader';
@@ -107,19 +108,42 @@ export function SourcesPanel({ profile }: { profile: UserProfile }) {
                                     <p className="text-xs text-gray-500">
                                         We are currently fine-tuning {provider} integration. Get notified when it's ready.
                                     </p>
-                                    <Link
-                                        href="/dashboard/settings"
-                                        className="block w-full text-center py-1.5 bg-purple-50 text-purple-700 border border-purple-100 text-xs font-bold rounded hover:bg-purple-100 transition-colors"
-                                    >
-                                        Join Beta Waitlist
-                                    </Link>
+                                    {profile.waitlist?.includes(provider) ? (
+                                        <div className="w-full text-center py-1.5 bg-green-50 text-green-700 border border-green-100 text-xs font-bold rounded flex items-center justify-center gap-1">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                            You're on the list!
+                                        </div>
+                                    ) : (
+                                        <button
+                                            onClick={() => {
+                                                toast.promise(joinWaitlistAction(provider), {
+                                                    loading: `Joining ${provider} waitlist...`,
+                                                    success: (data) => {
+                                                        if (data.success) {
+                                                            // Optimistic update handled by revalidation or we can force reload
+                                                            // For now rely on toast. 
+                                                            // Ideally SourcesPanel should receive setProfile to update locally?
+                                                            // It receives profile prop. We need to trigger a router refresh.
+                                                            window.location.reload();
+                                                            return `Joined ${provider} waitlist!`;
+                                                        }
+                                                        throw new Error(data.error);
+                                                    },
+                                                    error: "Failed to join waitlist"
+                                                });
+                                            }}
+                                            className="block w-full text-center py-1.5 bg-purple-50 text-purple-700 border border-purple-100 text-xs font-bold rounded hover:bg-purple-100 transition-colors"
+                                        >
+                                            Join Beta Waitlist
+                                        </button>
+                                    )}
                                 </div>
                             )}
 
                             {provider === 'github' && isConnected && (
                                 <div className="space-y-3">
                                     {/* Session Check: If connected but not logged in via GitHub, warn user */}
-                                    {session?.provider !== 'github' ? (
+                                    {(session as any)?.provider !== 'github' ? (
                                         <div className="bg-yellow-50 border border-yellow-200 rounded p-2 text-xs">
                                             <p className="text-yellow-800 mb-2">Login with GitHub to sync.</p>
                                             <button

@@ -9,7 +9,7 @@ import { DownloadResume } from '@/components/resume/DownloadResume';
 import { HighlightsModal } from './HighlightsModal';
 import { SummaryModal } from './SummaryModal';
 import { SkillsModal } from './SkillsModal';
-import { ResumeUploader } from '@/components/studio/ResumeUploader';
+
 import { PDFPreview } from '@/components/resume/PDFPreview';
 import { GripVertical, Eye, EyeOff, Save, Loader2, ArrowUp, ArrowDown } from 'lucide-react';
 import { toast } from 'sonner';
@@ -27,7 +27,21 @@ const DEFAULT_CONFIG: ResumeConfig = {
 };
 
 export function ResumeBuilder({ profile }: { profile: UserProfile }) {
-    const [config, setConfig] = useState<ResumeConfig>(profile.resumeConfig || DEFAULT_CONFIG);
+    const [config, setConfig] = useState<ResumeConfig>(() => {
+        if (!profile.resumeConfig) return DEFAULT_CONFIG;
+
+        // Ensure all default sections are present in the merged config
+        const currentSections = profile.resumeConfig.sections || [];
+        const missingSections = DEFAULT_CONFIG.sections.filter(
+            def => !currentSections.some(curr => curr.id === def.id)
+        );
+
+        return {
+            ...DEFAULT_CONFIG,
+            ...profile.resumeConfig,
+            sections: [...currentSections, ...missingSections]
+        };
+    });
     const [isSaving, setIsSaving] = useState(false);
 
     // Template State
@@ -156,13 +170,7 @@ export function ResumeBuilder({ profile }: { profile: UserProfile }) {
 
             {/* Left: Editor */}
             <div className="w-1/3 flex flex-col gap-4">
-                {/* 1. Smart Import (Default) */}
-                <div className="bg-white rounded-xl border border-black/10 shadow-sm p-4">
-                    <h2 className="font-bold text-lg mb-4 flex items-center gap-2">
-                        <span>📄</span> Auto-Fill
-                    </h2>
-                    <ResumeUploader profile={profile} />
-                </div>
+
 
                 <div className="bg-white rounded-xl border border-black/10 shadow-sm p-4">
                     <div className="flex justify-between items-center mb-4">
@@ -178,53 +186,48 @@ export function ResumeBuilder({ profile }: { profile: UserProfile }) {
                     </div>
 
                     <div className="space-y-2">
-                        {config.sections.map((section, index) => (
-                            <div
-                                key={section.id}
-                                className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${section.visible ? 'bg-white border-black/10' : 'bg-gray-50 border-black/5 text-gray-400'}`}
-                            >
-                                <div className="text-gray-300 cursor-move">
-                                    <GripVertical size={16} />
-                                </div>
+                        {(config.sections || []).map((section, index) => {
+                            const isEditable = section.id === 'summary' || section.id === 'wins' || section.id === 'skills';
+                            return (
+                                <div
+                                    key={section.id}
+                                    onClick={() => isEditable && handleEdit(section.id)}
+                                    className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${section.visible ? 'bg-white border-black/10' : 'bg-gray-50 border-black/5 text-gray-400'
+                                        } ${isEditable ? 'cursor-pointer hover:border-black/30 hover:shadow-sm' : ''}`}
+                                >
+                                    <div className="text-gray-300 cursor-move" onClick={(e) => e.stopPropagation()}>
+                                        <GripVertical size={16} />
+                                    </div>
 
-                                <span className="flex-1 font-medium text-sm">{section.text}</span>
+                                    <span className="flex-1 font-medium text-sm select-none">{section.text}</span>
 
-                                <div className="flex items-center gap-1">
-                                    {(section.id === 'summary' || section.id === 'wins' || section.id === 'skills') && (
+                                    <div className="flex items-center gap-1">
                                         <button
-                                            onClick={() => handleEdit(section.id)}
-                                            className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-black mr-1"
-                                            title="Configure Section"
+                                            onClick={(e) => { e.stopPropagation(); handleMove(index, 'up'); }}
+                                            disabled={index === 0}
+                                            className="p-1 hover:bg-gray-100 rounded text-gray-500 disabled:opacity-30 transition-colors"
                                         >
-                                            <SettingsIcon size={14} />
+                                            <ArrowUp size={14} />
                                         </button>
-                                    )}
-
-                                    <button
-                                        onClick={() => handleMove(index, 'up')}
-                                        disabled={index === 0}
-                                        className="p-1 hover:bg-gray-100 rounded text-gray-500 disabled:opacity-30"
-                                    >
-                                        <ArrowUp size={14} />
-                                    </button>
-                                    <button
-                                        onClick={() => handleMove(index, 'down')}
-                                        disabled={index === config.sections.length - 1}
-                                        className="p-1 hover:bg-gray-100 rounded text-gray-500 disabled:opacity-30"
-                                    >
-                                        <ArrowDown size={14} />
-                                    </button>
-                                    <div className="w-px h-4 bg-gray-200 mx-1" />
-                                    <button
-                                        onClick={() => handleToggle(section.id)}
-                                        className={`p-1 rounded ${section.visible ? 'text-gray-500 hover:text-black hover:bg-gray-100' : 'text-gray-400 hover:text-gray-600'}`}
-                                        title={section.visible ? "Hide Section" : "Show Section"}
-                                    >
-                                        {section.visible ? <Eye size={14} /> : <EyeOff size={14} />}
-                                    </button>
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleMove(index, 'down'); }}
+                                            disabled={index === config.sections.length - 1}
+                                            className="p-1 hover:bg-gray-100 rounded text-gray-500 disabled:opacity-30 transition-colors"
+                                        >
+                                            <ArrowDown size={14} />
+                                        </button>
+                                        <div className="w-px h-4 bg-gray-200 mx-1" />
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleToggle(section.id); }}
+                                            className={`p-1 rounded transition-colors ${section.visible ? 'text-gray-500 hover:text-black hover:bg-gray-100' : 'text-gray-400 hover:text-gray-600'}`}
+                                            title={section.visible ? "Hide Section" : "Show Section"}
+                                        >
+                                            {section.visible ? <Eye size={14} /> : <EyeOff size={14} />}
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
 
                     <div className="mt-6 p-4 bg-blue-50 text-blue-800 rounded-lg text-xs">
