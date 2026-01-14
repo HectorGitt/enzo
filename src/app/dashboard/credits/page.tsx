@@ -27,9 +27,7 @@ import {
 } from "@/app/credits-actions";
 import { toast } from "sonner";
 
-// Single PAYG product - credits are calculated based on amount paid
 // Rate: $2 per 1,000,000 credits (1 token = 1 credit)
-const PAYG_PRODUCT_ID = "pdt_0NW7yRm5bR1SACGsMPV1Q";
 const CREDITS_PER_DOLLAR = 500000; // $1 = 500K credits ($2 per million)
 const MIN_PURCHASE_DOLLARS = 1; // Minimum $1 purchase
 
@@ -80,11 +78,7 @@ export default function CreditsPage() {
 	const handlePurchase = async (credits: number, price: number) => {
 		setLoading(String(credits));
 		try {
-			const { url } = await createCheckoutSessionAction(
-				PAYG_PRODUCT_ID,
-				credits,
-				price
-			);
+			const { url } = await createCheckoutSessionAction(credits, price);
 			if (url) {
 				window.location.href = url;
 			}

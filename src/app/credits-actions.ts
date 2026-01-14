@@ -82,13 +82,17 @@ export async function addCreditsAction(amount: number) {
 }
 
 export async function createCheckoutSessionAction(
-	productId: string,
 	credits: number,
 	priceInDollars: number
 ) {
 	const session = await auth();
 	if (!session?.user?.email || !session?.user?.name) {
 		throw new Error("User not authenticated or missing details");
+	}
+
+	const productId = process.env.DODO_PAYMENTS_PRODUCT_ID;
+	if (!productId) {
+		throw new Error("DODO_PAYMENTS_PRODUCT_ID not configured");
 	}
 
 	try {

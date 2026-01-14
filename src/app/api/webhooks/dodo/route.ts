@@ -3,9 +3,7 @@ import { db } from "@/lib/db";
 import { dodo } from "@/lib/dodo";
 import crypto from "crypto";
 
-// Single PAYG Product ID
 // Rate: $2 per 1,000,000 credits (1 token = 1 credit)
-const PAYG_PRODUCT_ID = "pdt_0NW7yRm5bR1SACGsMPV1Q";
 const CREDITS_PER_DOLLAR = 500000; // $1 = 500K credits ($2 per million)
 
 export async function POST(request: NextRequest) {
