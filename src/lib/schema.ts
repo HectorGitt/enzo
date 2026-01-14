@@ -102,6 +102,8 @@ export interface UserProfile {
 	};
 	savedContent?: SavedContent[];
 	waitlist?: string[]; // Array of integration IDs
+	credits: number; // Default 10000
+	tier: 'free' | 'pro'; // Default 'free'
 }
 
 export interface RawActivity {

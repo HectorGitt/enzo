@@ -160,6 +160,17 @@ export async function ingestGitHub(username: string, token: string, email: strin
         log(`Identified ${uniqueActivities.length} new raw activities.`, "info");
 
         if (uniqueActivities.length > 0) {
+            // Credit Check & Deduction
+            const cost = uniqueActivities.length * 50; // 50 credits per item
+            const { deductCreditsAction } = await import('./credits-actions');
+            const collection = await deductCreditsAction(cost, `Smart Ingestion: ${uniqueActivities.length} items`);
+
+            if (!collection.success) {
+                log(`❌ SKIPPED: Insufficient credits (${cost} needed).`, "error");
+                return { success: false, count: 0, logs, error: "Insufficient credits. Please recharge." };
+            }
+            log(`Charged ${cost} credits.`, "info");
+
             await saveProfileToDB({
                 ...currentProfile,
                 rawActivities: [...uniqueActivities, ...(currentProfile.rawActivities || [])],

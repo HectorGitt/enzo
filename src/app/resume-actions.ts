@@ -147,6 +147,10 @@ export async function parseResumeAction(formData: FormData) {
     if (!file) return { success: false, error: "No file provided" };
 
     try {
+        const { deductCreditsAction } = await import('./credits-actions');
+        const payment = await deductCreditsAction(500, "Resume Parsing"); // 500 Credits
+        if (!payment.success) return { success: false, error: "Insufficient credits (500 needed)." };
+
         const buffer = Buffer.from(await file.arrayBuffer());
         const data = await pdf(buffer);
         const text = data.text;

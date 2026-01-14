@@ -24,6 +24,8 @@ export async function fetchProfile() {
 			id: "",
 			connectedProviders: [],
 			waitlist: [],
+			credits: 10000,
+			tier: 'free',
 		} as UserProfile)
 	);
 }
