@@ -316,6 +316,30 @@ export function DashboardSidebar() {
 							/>
 						</div>
 					)}
+
+					<div className="pt-4 mt-2 border-t border-black/5">
+						<NavItem
+							href="/dashboard/credits"
+							label="Buy Credits"
+							icon={
+								<svg
+									className="w-5 h-5 text-yellow-500"
+									fill="none"
+									stroke="currentColor"
+									viewBox="0 0 24 24"
+								>
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										strokeWidth="2"
+										d="M13 10V3L4 14h7v7l9-11h-7z"
+									></path>
+								</svg>
+							}
+							active={pathname === "/dashboard/credits"}
+							collapsed={isCollapsed}
+						/>
+					</div>
 				</div>
 			</nav>
 
@@ -369,7 +393,7 @@ function NavItem({
 	return (
 		<Link
 			href={href}
-			className={`block px-4 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-3 ${
+			className={`flex px-4 py-2.5 rounded-lg text-sm font-medium transition-colors items-center gap-3 ${
 				active
 					? "bg-[var(--accent-cyan)] text-white"
 					: "text-[var(--text-secondary)] hover:bg-black/5 hover:text-[var(--text-primary)]"
