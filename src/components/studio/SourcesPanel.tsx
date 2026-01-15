@@ -1,222 +1,339 @@
-'use client';
+"use client";
 
-import { UserProfile } from '@/lib/schema';
-import { useRef, useState, useEffect } from 'react';
-import Link from 'next/link';
-import { syncGitHubWins } from '@/app/ingest-actions';
-import { joinWaitlistAction } from '@/app/waitlist-actions';
-import { ProcessingLog } from '@/lib/github';
-import { toast } from 'sonner';
-import { ResumeUploader } from '@/components/studio/ResumeUploader';
-import { useSession, signIn } from 'next-auth/react';
+import { UserProfile } from "@/lib/schema";
+import { useRef, useState, useEffect } from "react";
+import Link from "next/link";
+import { syncGitHubWins } from "@/app/ingest-actions";
+import { joinWaitlistAction } from "@/app/waitlist-actions";
+import { ProcessingLog } from "@/lib/github";
+import { toast } from "sonner";
+import { ResumeUploader } from "@/components/studio/ResumeUploader";
+import { useSession, signIn } from "next-auth/react";
 
 export function SourcesPanel({ profile }: { profile: UserProfile }) {
-    const { data: session } = useSession();
-    const providers = ['github', 'linkedin', 'slack', 'google'];
-    const connected = new Set(profile.connectedProviders || []);
-    const [isSyncing, setIsSyncing] = useState(false);
-    const [logs, setLogs] = useState<ProcessingLog[]>(() => {
-        try {
-            return profile.lastSyncLog ? JSON.parse(profile.lastSyncLog) : [];
-        } catch {
-            return [];
-        }
-    });
+	const { data: session } = useSession();
+	const providers = ["github", "linkedin", "slack", "google"];
 
-    const handleSync = async () => {
-        setIsSyncing(true);
-        setLogs(prev => [...prev, { timestamp: new Date().toISOString(), level: 'info', message: '--- New Sync Session ---' }]);
+	// Check if GitHub is connected via session provider or stored in profile
+	const isGitHubConnected =
+		(session as any)?.provider === "github" ||
+		profile.connectedProviders?.includes("github");
 
-        try {
-            const result = await syncGitHubWins();
-            if (!result.success) {
-                toast.error(result.error || "Sync failed");
-                if (result.error) {
-                    setLogs(prev => [...prev, { timestamp: new Date().toISOString(), level: 'error', message: result.error! }]);
-                }
-                return;
-            }
-            if (result.logs) {
-                setLogs(result.logs);
-                toast.success(`Synced ${result.count} new items`);
-            }
-        } catch (e) {
-            console.error(e);
-            toast.error("Sync failed to connect to server");
-            setLogs(prev => [...prev, { timestamp: new Date().toISOString(), level: 'error', message: 'Sync failed (Network).' }]);
-        } finally {
-            setIsSyncing(false);
-        }
-    };
+	const connected = new Set(profile.connectedProviders || []);
+	// Add github to connected set if logged in via GitHub
+	if (isGitHubConnected) {
+		connected.add("github");
+	}
 
-    return (
-        <div className="flex flex-col h-full">
-            <div className="p-4 border-b border-black/5 bg-gray-50/50">
-                <h2 className="font-bold flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs">1</span>
-                    Collection
-                </h2>
-                <p className="text-xs text-[var(--text-secondary)] mt-1">Raw data sources</p>
-            </div>
+	const [isSyncing, setIsSyncing] = useState(false);
+	const [logs, setLogs] = useState<ProcessingLog[]>(() => {
+		try {
+			return profile.lastSyncLog ? JSON.parse(profile.lastSyncLog) : [];
+		} catch {
+			return [];
+		}
+	});
 
-            <div className="p-4 space-y-4 overflow-y-auto overflow-x-hidden flex-1">
-                {/* PDF Resume Import */}
-                <ResumeUploader profile={profile} />
+	const handleSync = async () => {
+		setIsSyncing(true);
+		setLogs((prev) => [
+			...prev,
+			{
+				timestamp: new Date().toISOString(),
+				level: "info",
+				message: "--- New Sync Session ---",
+			},
+		]);
 
-                {providers.map(provider => {
-                    const isConnected = connected.has(provider);
-                    const isBeta = provider !== 'github';
+		try {
+			const result = await syncGitHubWins();
+			if (!result.success) {
+				toast.error(result.error || "Sync failed");
+				if (result.error) {
+					setLogs((prev) => [
+						...prev,
+						{
+							timestamp: new Date().toISOString(),
+							level: "error",
+							message: result.error!,
+						},
+					]);
+				}
+				return;
+			}
+			if (result.logs) {
+				setLogs(result.logs);
+				toast.success(`Synced ${result.count} new items`);
+			}
+		} catch (e) {
+			console.error(e);
+			toast.error("Sync failed to connect to server");
+			setLogs((prev) => [
+				...prev,
+				{
+					timestamp: new Date().toISOString(),
+					level: "error",
+					message: "Sync failed (Network).",
+				},
+			]);
+		} finally {
+			setIsSyncing(false);
+		}
+	};
 
-                    return (
-                        <div key={provider} className={`p-4 rounded-lg border ${isConnected ? 'border-green-200 bg-green-50/30' : 'border-dashed border-black/10'} ${isBeta ? 'bg-gray-50/50' : ''}`}>
-                            <div className="flex flex-wrap justify-between items-center gap-y-2 mb-2">
-                                <span className="capitalize font-bold flex items-center gap-2">
-                                    {provider}
-                                    {isBeta && (
-                                        <span className="px-1.5 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-bold rounded-full uppercase tracking-wider">Beta</span>
-                                    )}
-                                    {provider === 'github' && isConnected && (
-                                        <div className="flex items-center gap-2">
-                                            <a
-                                                href="https://github.com/settings/installations"
-                                                target="_blank"
-                                                className="text-xs border border-black/10 px-2 py-1 rounded hover:bg-black hover:text-white transition-colors"
-                                            >
-                                                Manage
-                                            </a>
-                                            <Link
-                                                href="/dashboard/studio/github"
-                                                className="text-xs bg-black text-white px-2 py-1 rounded hover:opacity-80 transition-opacity"
-                                            >
-                                                Explore
-                                            </Link>
-                                        </div>
-                                    )}
-                                </span>
-                                {isConnected ? (
-                                    <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full shrink-0">Active</span>
-                                ) : (
-                                    <span className={`text-[10px] shrink-0 ${isBeta ? 'text-purple-600 font-medium' : 'text-[var(--text-muted)]'}`}>
-                                        {isBeta ? 'Waitlist Open' : 'Disconnected'}
-                                    </span>
-                                )}
-                            </div>
+	return (
+		<div className="flex flex-col h-full">
+			<div className="p-4 border-b border-black/5 bg-gray-50/50">
+				<h2 className="font-bold flex items-center gap-2">
+					<span className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs">
+						1
+					</span>
+					Collection
+				</h2>
+				<p className="text-xs text-[var(--text-secondary)] mt-1">
+					Raw data sources
+				</p>
+			</div>
 
-                            {/* Beta Content */}
-                            {isBeta && !isConnected && (
-                                <div className="space-y-3">
-                                    <p className="text-xs text-gray-500">
-                                        We are currently fine-tuning {provider} integration. Get notified when it's ready.
-                                    </p>
-                                    {profile.waitlist?.includes(provider) ? (
-                                        <div className="w-full text-center py-1.5 bg-green-50 text-green-700 border border-green-100 text-xs font-bold rounded flex items-center justify-center gap-1">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                                            You're on the list!
-                                        </div>
-                                    ) : (
-                                        <button
-                                            onClick={() => {
-                                                toast.promise(joinWaitlistAction(provider), {
-                                                    loading: `Joining ${provider} waitlist...`,
-                                                    success: (data) => {
-                                                        if (data.success) {
-                                                            // Optimistic update handled by revalidation or we can force reload
-                                                            // For now rely on toast. 
-                                                            // Ideally SourcesPanel should receive setProfile to update locally?
-                                                            // It receives profile prop. We need to trigger a router refresh.
-                                                            window.location.reload();
-                                                            return `Joined ${provider} waitlist!`;
-                                                        }
-                                                        throw new Error(data.error);
-                                                    },
-                                                    error: "Failed to join waitlist"
-                                                });
-                                            }}
-                                            className="block w-full text-center py-1.5 bg-purple-50 text-purple-700 border border-purple-100 text-xs font-bold rounded hover:bg-purple-100 transition-colors"
-                                        >
-                                            Join Beta Waitlist
-                                        </button>
-                                    )}
-                                </div>
-                            )}
+			<div className="p-4 space-y-4 overflow-y-auto overflow-x-hidden flex-1">
+				{/* PDF Resume Import */}
+				<ResumeUploader profile={profile} />
 
-                            {provider === 'github' && isConnected && (
-                                <div className="space-y-3">
-                                    {/* Session Check: If connected but not logged in via GitHub, warn user */}
-                                    {(session as any)?.provider !== 'github' ? (
-                                        <div className="bg-yellow-50 border border-yellow-200 rounded p-2 text-xs">
-                                            <p className="text-yellow-800 mb-2">Login with GitHub to sync.</p>
-                                            <button
-                                                onClick={() => signIn('github')}
-                                                className="w-full py-1 bg-yellow-100 text-yellow-800 font-bold rounded hover:bg-yellow-200 transition-colors"
-                                            >
-                                                Relogin
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            {/* Preview Latest */}
-                                            <div className="bg-white border border-black/5 rounded p-2">
-                                                {profile.rawActivities && profile.rawActivities.filter(w => w.source === 'github').length > 0 ? (
-                                                    <>
-                                                        <div className="text-[10px] uppercase font-bold text-gray-400 mb-1">Latest Collected</div>
-                                                        <div className="space-y-1">
-                                                            {profile.rawActivities
-                                                                .filter(w => w.source === 'github')
-                                                                .slice(0, 3)
-                                                                .map(w => (
-                                                                    <div key={w.id} className="text-[10px] truncate border-b border-black/5 last:border-0 pb-1 last:pb-0 w-full min-w-0">
-                                                                        {w.title.replace(/^Commit to .*?: /, '')}
-                                                                    </div>
-                                                                ))
-                                                            }
-                                                            <div className="text-[9px] text-gray-400 text-center pt-1">
-                                                                + {profile.rawActivities.filter(w => w.source === 'github').length - 3} more
-                                                            </div>
-                                                        </div>
-                                                    </>
-                                                ) : (
-                                                    <div className="text-[10px] text-gray-400 italic">No data yet. Sync now.</div>
-                                                )}
-                                            </div>
+				{providers.map((provider) => {
+					const isConnected = connected.has(provider);
+					const isBeta = provider !== "github";
 
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={handleSync}
-                                                    disabled={isSyncing}
-                                                    className="flex-1 py-1.5 bg-black text-white text-xs font-bold rounded hover:opacity-80 disabled:opacity-50"
-                                                >
-                                                    {isSyncing ? 'Scanning...' : 'Sync Now'}
-                                                </button>
-                                            </div>
-                                        </>
-                                    )}
-                                </div>
-                            )}
-                            {provider === 'linkedin' && isConnected && (
-                                <div className="text-xs text-[var(--text-secondary)]">PDF Imported</div>
-                            )}
-                        </div>
-                    );
-                })}
+					return (
+						<div
+							key={provider}
+							className={`p-4 rounded-lg border ${
+								isConnected
+									? "border-green-200 bg-green-50/30"
+									: "border-dashed border-black/10"
+							} ${isBeta ? "bg-gray-50/50" : ""}`}
+						>
+							<div className="flex flex-wrap justify-between items-center gap-y-2 mb-2">
+								<span className="capitalize font-bold flex items-center gap-2">
+									{provider}
+									{isBeta && (
+										<span className="px-1.5 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-bold rounded-full uppercase tracking-wider">
+											Beta
+										</span>
+									)}
+									{provider === "github" && isConnected && (
+										<div className="flex items-center gap-2">
+											<a
+												href="https://github.com/settings/installations"
+												target="_blank"
+												className="text-xs border border-black/10 px-2 py-1 rounded hover:bg-black hover:text-white transition-colors"
+											>
+												Manage
+											</a>
+											<Link
+												href="/dashboard/studio/github"
+												className="text-xs bg-black text-white px-2 py-1 rounded hover:opacity-80 transition-opacity"
+											>
+												Explore
+											</Link>
+										</div>
+									)}
+								</span>
+								{isConnected ? (
+									<span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full shrink-0">
+										Active
+									</span>
+								) : (
+									<span
+										className={`text-[10px] shrink-0 ${
+											isBeta
+												? "text-purple-600 font-medium"
+												: "text-[var(--text-muted)]"
+										}`}
+									>
+										{isBeta
+											? "Waitlist Open"
+											: "Disconnected"}
+									</span>
+								)}
+							</div>
 
-                <div className="border border-black/10 rounded-lg bg-gray-50 text-[var(--text-primary)] font-mono text-[10px] p-3 h-48 overflow-y-auto w-full shadow-inner">
-                    <div className="flex justify-between items-center border-b border-gray-200 pb-1 mb-2">
-                        <span className="text-[var(--text-secondary)] font-bold tracking-wider">LOGS</span>
-                        {isSyncing && <span className="animate-pulse text-green-600">● Live</span>}
-                    </div>
-                    {logs.length === 0 ? (
-                        <span className="text-gray-400 italic">No logs available.</span>
-                    ) : (
-                        logs.map((log, i) => (
-                            <div key={i} className="mb-1 border-b border-black/5 pb-1 last:border-0">
-                                <span className="text-[var(--text-muted)]">[{log.timestamp.split('T')[1].split('.')[0]}]</span>{' '}
-                                <span className={`${log.level === 'error' ? 'text-red-500 font-bold' : 'text-gray-700'} break-all`}>{log.message}</span>
-                            </div>
-                        ))
-                    )}
-                </div>
-            </div>
-        </div>
-    );
+							{/* Beta Content */}
+							{isBeta && !isConnected && (
+								<div className="space-y-3">
+									<p className="text-xs text-gray-500">
+										We are currently fine-tuning {provider}{" "}
+										integration. Get notified when it's
+										ready.
+									</p>
+									{profile.waitlist?.includes(provider) ? (
+										<div className="w-full text-center py-1.5 bg-green-50 text-green-700 border border-green-100 text-xs font-bold rounded flex items-center justify-center gap-1">
+											<span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+											You're on the list!
+										</div>
+									) : (
+										<button
+											onClick={() => {
+												toast.promise(
+													joinWaitlistAction(
+														provider
+													),
+													{
+														loading: `Joining ${provider} waitlist...`,
+														success: (data) => {
+															if (data.success) {
+																// Optimistic update handled by revalidation or we can force reload
+																// For now rely on toast.
+																// Ideally SourcesPanel should receive setProfile to update locally?
+																// It receives profile prop. We need to trigger a router refresh.
+																window.location.reload();
+																return `Joined ${provider} waitlist!`;
+															}
+															throw new Error(
+																data.error
+															);
+														},
+														error: "Failed to join waitlist",
+													}
+												);
+											}}
+											className="block w-full text-center py-1.5 bg-purple-50 text-purple-700 border border-purple-100 text-xs font-bold rounded hover:bg-purple-100 transition-colors"
+										>
+											Join Beta Waitlist
+										</button>
+									)}
+								</div>
+							)}
+
+							{provider === "github" && isConnected && (
+								<div className="space-y-3">
+									{/* Session Check: If connected but not logged in via GitHub, warn user */}
+									{(session as any)?.provider !== "github" ? (
+										<div className="bg-yellow-50 border border-yellow-200 rounded p-2 text-xs">
+											<p className="text-yellow-800 mb-2">
+												Login with GitHub to sync.
+											</p>
+											<button
+												onClick={() => signIn("github")}
+												className="w-full py-1 bg-yellow-100 text-yellow-800 font-bold rounded hover:bg-yellow-200 transition-colors"
+											>
+												Relogin
+											</button>
+										</div>
+									) : (
+										<>
+											{/* Preview Latest */}
+											<div className="bg-white border border-black/5 rounded p-2">
+												{profile.rawActivities &&
+												profile.rawActivities.filter(
+													(w) => w.source === "github"
+												).length > 0 ? (
+													<>
+														<div className="text-[10px] uppercase font-bold text-gray-400 mb-1">
+															Latest Collected
+														</div>
+														<div className="space-y-1">
+															{profile.rawActivities
+																.filter(
+																	(w) =>
+																		w.source ===
+																		"github"
+																)
+																.slice(0, 3)
+																.map((w) => (
+																	<div
+																		key={
+																			w.id
+																		}
+																		className="text-[10px] truncate border-b border-black/5 last:border-0 pb-1 last:pb-0 w-full min-w-0"
+																	>
+																		{w.title.replace(
+																			/^Commit to .*?: /,
+																			""
+																		)}
+																	</div>
+																))}
+															<div className="text-[9px] text-gray-400 text-center pt-1">
+																+{" "}
+																{profile.rawActivities.filter(
+																	(w) =>
+																		w.source ===
+																		"github"
+																).length -
+																	3}{" "}
+																more
+															</div>
+														</div>
+													</>
+												) : (
+													<div className="text-[10px] text-gray-400 italic">
+														No data yet. Sync now.
+													</div>
+												)}
+											</div>
+
+											<div className="flex gap-2">
+												<button
+													onClick={handleSync}
+													disabled={isSyncing}
+													className="flex-1 py-1.5 bg-black text-white text-xs font-bold rounded hover:opacity-80 disabled:opacity-50"
+												>
+													{isSyncing
+														? "Scanning..."
+														: "Sync Now"}
+												</button>
+											</div>
+										</>
+									)}
+								</div>
+							)}
+							{provider === "linkedin" && isConnected && (
+								<div className="text-xs text-[var(--text-secondary)]">
+									PDF Imported
+								</div>
+							)}
+						</div>
+					);
+				})}
+
+				<div className="border border-black/10 rounded-lg bg-gray-50 text-[var(--text-primary)] font-mono text-[10px] p-3 h-48 overflow-y-auto w-full shadow-inner">
+					<div className="flex justify-between items-center border-b border-gray-200 pb-1 mb-2">
+						<span className="text-[var(--text-secondary)] font-bold tracking-wider">
+							LOGS
+						</span>
+						{isSyncing && (
+							<span className="animate-pulse text-green-600">
+								● Live
+							</span>
+						)}
+					</div>
+					{logs.length === 0 ? (
+						<span className="text-gray-400 italic">
+							No logs available.
+						</span>
+					) : (
+						logs.map((log, i) => (
+							<div
+								key={i}
+								className="mb-1 border-b border-black/5 pb-1 last:border-0"
+							>
+								<span className="text-[var(--text-muted)]">
+									[{log.timestamp.split("T")[1].split(".")[0]}
+									]
+								</span>{" "}
+								<span
+									className={`${
+										log.level === "error"
+											? "text-red-500 font-bold"
+											: "text-gray-700"
+									} break-all`}
+								>
+									{log.message}
+								</span>
+							</div>
+						))
+					)}
+				</div>
+			</div>
+		</div>
+	);
 }

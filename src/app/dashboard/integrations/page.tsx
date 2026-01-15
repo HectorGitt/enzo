@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { fetchProfile } from "@/app/actions";
 import { joinWaitlistAction } from "@/app/waitlist-actions";
 import { UserProfile } from "@/lib/schema";
@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Check, Bell, Loader2 } from "lucide-react";
 
 export default function IntegrationsPage() {
+	const { data: session } = useSession();
 	const [profile, setProfile] = useState<UserProfile | null>(null);
 	const [error, setError] = useState(false);
 
@@ -27,6 +28,10 @@ export default function IntegrationsPage() {
 	}
 
 	const isConnected = (provider: string) => {
+		// Check session provider for GitHub, or stored connectedProviders
+		if (provider === "github" && (session as any)?.provider === "github") {
+			return true;
+		}
 		return profile?.connectedProviders?.includes(provider) || false;
 	};
 

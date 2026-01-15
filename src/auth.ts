@@ -49,6 +49,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 		async jwt({ token, account, profile }) {
 			if (account) {
 				token.accessToken = account.access_token;
+				token.provider = account.provider; // Store the provider
 			}
 			if (profile) {
 				token.username = profile.login;
@@ -58,6 +59,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 		async session({ session, token }) {
 			// @ts-ignore
 			session.accessToken = token.accessToken;
+			// @ts-ignore
+			session.provider = token.provider; // Expose provider in session
 			// @ts-ignore
 			if (session.user) session.user.username = token.username;
 			return session;
