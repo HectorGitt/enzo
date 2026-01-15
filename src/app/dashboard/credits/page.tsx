@@ -1,7 +1,7 @@
 "use strict";
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import {
 	Card,
 	CardContent,
@@ -37,7 +37,24 @@ const CREDIT_OPTIONS = [
 	{ credits: 25000000, price: 50, label: "25M Credits" },
 ];
 
+// Wrapper component with Suspense boundary for useSearchParams
 export default function CreditsPage() {
+	return (
+		<Suspense fallback={<CreditsPageLoading />}>
+			<CreditsPageContent />
+		</Suspense>
+	);
+}
+
+function CreditsPageLoading() {
+	return (
+		<div className="container mx-auto p-8 max-w-5xl flex items-center justify-center min-h-[50vh]">
+			<Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+		</div>
+	);
+}
+
+function CreditsPageContent() {
 	const searchParams = useSearchParams();
 	const router = useRouter();
 	const success = searchParams.get("success");
