@@ -285,7 +285,7 @@ export function DashboardSidebar() {
 						collapsed={isCollapsed}
 					/>
 
-					{username && (
+					{username ? (
 						<div className="pt-4 mt-2 border-t border-black/5">
 							<NavItem
 								href={`/p/${username}`}
@@ -314,6 +314,17 @@ export function DashboardSidebar() {
 								external
 								collapsed={isCollapsed}
 							/>
+						</div>
+					) : (
+						<div className="pt-4 mt-2 border-t border-black/5 text-xs text-[var(--text-warning)] px-4">
+							Set your username in{" "}
+							<Link
+								href="/dashboard/settings"
+								className="underline"
+							>
+								Settings
+							</Link>{" "}
+							to share your live resume.
 						</div>
 					)}
 
