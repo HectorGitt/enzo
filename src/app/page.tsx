@@ -49,8 +49,11 @@ export default function Home() {
 						Enzo is now in Open Beta
 					</div>
 
-					<h1 className="text-6xl md:text-8xl font-bold tracking-tighter mb-8 bg-clip-text text-[var(--text-primary)]">
-						End Career <br /> <span>Amnesia.</span>
+					<h1 className="text-6xl md:text-8xl font-bold tracking-tighter mb-8 text-[var(--text-primary)]">
+						End Career <br />{" "}
+						<span className="text-[var(--accent-cyan)]">
+							Amnesia.
+						</span>
 					</h1>
 
 					<p className="text-xl text-[var(--text-secondary)] max-w-2xl mx-auto mb-10 leading-relaxed font-light">
