@@ -108,6 +108,11 @@ export async function createCheckoutSessionAction(
 		// Convert dollars to cents for Dodo (amount is in cents)
 		const amountInCents = Math.round(priceInDollars * 100);
 
+		const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+		const returnUrl = new URL("/dashboard/credits", baseUrl);
+		returnUrl.searchParams.set("success", "true");
+		returnUrl.searchParams.set("amount", credits.toString());
+
 		const checkoutSession = await dodo.checkoutSessions.create({
 			product_cart: [
 				{
@@ -121,7 +126,7 @@ export async function createCheckoutSessionAction(
 				name: session.user.name,
 			},
 			// Let customer choose their country during checkout
-			return_url: `${process.env.NEXTAUTH_URL}/dashboard/credits?success=true&amount=${credits}`,
+			return_url: returnUrl.toString(),
 			metadata: {
 				userId: session.user.email,
 				credits: String(credits),
