@@ -24,6 +24,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 			clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
 		}),
 	],
+	pages: {
+		signIn: "/login", // Use custom login page
+		error: "/login", // Redirect errors to login page
+	},
 	theme: {
 		colorScheme: "dark",
 		brandColor: "#00f3ff",
