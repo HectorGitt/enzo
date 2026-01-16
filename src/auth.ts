@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
-import Credentials from "next-auth/providers/credentials";
+import LinkedIn from "next-auth/providers/linkedin";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
 	trustHost: true,
@@ -19,25 +19,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 			clientId: process.env.GOOGLE_CLIENT_ID,
 			clientSecret: process.env.GOOGLE_CLIENT_SECRET,
 		}),
-		Credentials({
-			name: "Credentials",
-			credentials: {
-				email: { label: "Email", type: "email" },
-				password: { label: "Password", type: "password" },
-			},
-			async authorize(credentials) {
-				// Mock authentication for MVP - allow any login
-				// In a real app, verify against DB
-				if (credentials?.email && credentials?.password) {
-					return {
-						id: "user_1",
-						name: "Enzo User",
-						email: String(credentials.email),
-						image: "https://avatars.githubusercontent.com/u/123456",
-					};
-				}
-				return null;
-			},
+		LinkedIn({
+			clientId: process.env.LINKEDIN_CLIENT_ID,
+			clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
 		}),
 	],
 	theme: {
