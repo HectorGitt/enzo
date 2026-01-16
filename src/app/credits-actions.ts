@@ -120,9 +120,7 @@ export async function createCheckoutSessionAction(
 				email: session.user.email,
 				name: session.user.name,
 			},
-			billing_address: {
-				country: "US",
-			},
+			// Let customer choose their country during checkout
 			return_url: `${process.env.NEXTAUTH_URL}/dashboard/credits?success=true&amount=${credits}`,
 			metadata: {
 				userId: session.user.email,
