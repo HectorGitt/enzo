@@ -25,7 +25,7 @@ export async function fetchProfile() {
 			connectedProviders: [],
 			waitlist: [],
 			credits: 10000,
-			tier: 'free',
+			tier: "free",
 		} as UserProfile)
 	);
 }
@@ -39,17 +39,7 @@ export async function completeOnboarding() {
 	const profile = await fetchProfile();
 	if (!profile.wins) profile.wins = [];
 
-	// Add a seed win to mark onboarding as complete
-	profile.wins.push({
-		id: crypto.randomUUID(),
-		title: "Joined Enzo",
-		source: "system",
-		rawContent: "Started using Enzo to track my career.",
-		summary: "Account created.",
-		date: new Date().toISOString(),
-		tags: ["milestone"],
-		status: "approved",
-	});
+	// No default milestone win for new accounts
 
 	await updateProfile(profile);
 	return { success: true };
