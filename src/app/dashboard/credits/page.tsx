@@ -1,7 +1,7 @@
 "use strict";
 "use client";
 
-import React, { Suspense, useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState, useRef } from "react";
 import {
 	Card,
 	CardContent,
@@ -58,27 +58,67 @@ function CreditsPageContent() {
 	const searchParams = useSearchParams();
 	const router = useRouter();
 	const success = searchParams.get("success");
+	const status = searchParams.get("status");
 
 	const [balance, setBalance] = useState<number | null>(null);
+	const [balanceLoading, setBalanceLoading] = useState(true);
 	const [loading, setLoading] = useState<string | null>(null);
 	const [customAmount, setCustomAmount] = useState<string>("");
+	const [urlCleaned, setUrlCleaned] = useState(false);
+	const balanceLoadedRef = useRef(false);
 
 	useEffect(() => {
-		// Show success message if redirected from checkout
-		if (success === "true") {
+		// Handle payment status and clean up URL
+		if (success === "true" && status === "success") {
 			toast.success(
 				"Payment successful! Credits have been added to your account."
 			);
-			// Clean up URL params
-			router.replace("/dashboard/credits");
+			// Clean URL using history API
+			window.history.replaceState({}, '', '/dashboard/credits');
+			setUrlCleaned(true);
+		} else if (success === "true" && status === "failed") {
+			toast.error("Payment failed. No credits were added.");
+			// Clean URL using history API
+			window.history.replaceState({}, '', '/dashboard/credits');
+			setUrlCleaned(true);
+		} else {
+			// No payment params, URL is already clean
+			setUrlCleaned(true);
 		}
+	}, [success, status]);
 
-		loadBalance();
-	}, [success, router]);
+	useEffect(() => {
+		// Load balance only after URL is cleaned up
+		if (urlCleaned && !balanceLoadedRef.current) {
+			balanceLoadedRef.current = true;
+			loadBalance();
+		}
+	}, [urlCleaned]);
+
+	useEffect(() => {
+		// Safety fallback: clear loading state after 15 seconds
+		const fallbackTimer = setTimeout(() => {
+			setBalanceLoading(false);
+			if (balance === null) {
+				setBalance(0);
+			}
+		}, 15000);
+		
+		return () => clearTimeout(fallbackTimer);
+	}, [balance]);
 
 	const loadBalance = async () => {
 		try {
-			const res = await checkCreditsAction(0);
+			setBalanceLoading(true);
+			
+			// Add timeout to prevent infinite loading
+			const timeoutPromise = new Promise((_, reject) => {
+				setTimeout(() => reject(new Error('Balance load timeout')), 10000); // 10 second timeout
+			});
+			
+			const balancePromise = checkCreditsAction(0);
+			const res = await Promise.race([balancePromise, timeoutPromise]) as any;
+			
 			// Always set balance even if not allowed (e.g. 0 or insufficient)
 			// checkCreditsAction now returns currentCredits even on error/fail usually
 			if (typeof res.currentCredits === "number") {
@@ -87,8 +127,10 @@ function CreditsPageContent() {
 				setBalance(0); // Fallback
 			}
 		} catch (e) {
-			console.error(e);
+			console.error('Balance load failed:', e);
 			setBalance(0);
+		} finally {
+			setBalanceLoading(false);
 		}
 	};
 
@@ -135,10 +177,14 @@ function CreditsPageContent() {
 					</span>
 					<div className="text-3xl font-bold text-foreground flex items-center gap-2 mt-1">
 						<Zap className="w-6 h-6 text-yellow-500 fill-yellow-500" />
-						{balance !== null ? (
-							balance.toLocaleString()
-						) : (
+						{balanceLoading ? (
 							<Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+						) : (
+							balance !== null ? (
+								balance.toLocaleString()
+							) : (
+								<span className="text-muted-foreground">0</span>
+							)
 						)}
 					</div>
 				</div>
