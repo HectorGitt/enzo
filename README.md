@@ -34,7 +34,15 @@ Enzo is an autonomous professio- **Buffer:** +10% safety margin
 - **Smart Updates:** Updates existing portfolio content instead of overwriting, preserving customizations.
 - **GitHub App Permissions:** Secure repository access with granular permission controls.
 
-### 3. **The Data Studio**
+### 3. **AI Career Copilot (Agentic RAG)**
+
+- **Context-Aware Chat:** Use "Enzo" to query your own professional history (e.g., "What did I work on last December?").
+- **Agentic Tools:** The AI intelligently selects tools to search by date (`search_by_date`), repository (`search_by_repo`), or semantic topic (`search_by_similarity`).
+- **Resume Context:** The bot has full access to your resume data (Skills, Experience, Education) to provide tailored career advice.
+- **Deep Search:** Retrieves "Raw Activities" (commits/PRs) and "Wins" to answer complex questions about your work.
+- **Source Citations:** Every answer cites the specific data points used.
+
+### 4. **The Data Studio**
 
 - **Kanban Workflow:** Drag-and-drop workflow to move raw data into your "Highlights".
 - **AI Refinement:** Use **Gemini 2.5 Flash** to rewrite raw commit logs into executive-ready bullet points and generate professional bio variations.
@@ -42,7 +50,7 @@ Enzo is an autonomous professio- **Buffer:** +10% safety margin
 - **GitHub Explorer:** Browse repositories and generate highlights from specific repos.
 - **Bulk Operations:** Process multiple commits and PRs simultaneously.
 
-### 4. **Resume Builder**
+### 5. **Resume Builder**
 
 - **Live Preview:** See changes instantly as you edit.
 - **PDF Import:** Upload existing PDF resumes and parse content automatically.
@@ -53,7 +61,7 @@ Enzo is an autonomous professio- **Buffer:** +10% safety margin
 - **Version Control:** Save multiple "Bio Variations" to target different roles.
 - **Export Options:** Download as PDF or Word document.
 
-### 5. **Content Generator**
+### 6. **Content Generator**
 
 - **AI-Powered Content:** Generate professional overviews, strengths analysis, recommendations, and highlights from your activity history.
 - **Customizable Tone:** Choose from professional, casual, enthusiastic, executive, or bold tones.
@@ -64,20 +72,20 @@ Enzo is an autonomous professio- **Buffer:** +10% safety margin
 - **Save to Library:** Store generated content for easy reuse.
 - **Free Tier Limit:** Free users can generate content once; upgrade to Pro for unlimited usage.
 
-### 6. **Public Portfolio**
+### 7. **Public Portfolio**
 
 - **Live Profiles:** Claim your unique username (e.g., `enzo.dev/p/yourname`) and share your verified career history with the world.
 - **Verified Badges:** Show off verified commits and LinkedIn activity with trust badges.
 - **SEO Optimized:** Meta tags, Open Graph, and JSON-LD structured data for better search visibility.
 - **Responsive Design:** Mobile-friendly portfolio layouts.
 
-### 7. **Library & Saved Content**
+### 8. **Library & Saved Content**
 
 - **Content Management:** Save generated bios, cover letters, and highlights to your personal library for easy reuse.
 - **Organization:** Categorize and search through your saved content.
 - **Version History:** Track changes to your saved content over time.
 
-### 8. **Credit System & Payments**
+### 9. **Credit System & Payments**
 
 - **Pay-As-You-Go (PAYG):** Purchase credits as needed - $2 per 1,000,000 credits.
 - **Token-Based Billing:** 1 token = 1 credit. Charged based on actual Gemini API usage.
@@ -88,14 +96,14 @@ Enzo is an autonomous professio- **Buffer:** +10% safety margin
 - **Timeout Protection:** Automatic fallbacks prevent infinite loading states.
 - **Free Tier Limits:** Free users get 500,000 credits and can generate content once; upgrade to Pro for unlimited usage.
 
-### 9. **Authentication & Security**
+### 10. **Authentication & Security**
 
 - **Multi-Provider Auth:** GitHub, Google, and LinkedIn OAuth integration.
 - **Secure Sessions:** NextAuth.js v5 with proper session management.
 - **GitHub App Security:** OAuth flow with secure token management and permission scopes.
 - **Database Security:** Connection pooling and prepared statements for SQL injection prevention.
 
-### 10. **Beta Program & Waitlist**
+### 11. **Beta Program & Waitlist**
 
 - **Integration Waitlist:** Users can sign up for early access to Slack, Google Calendar, and LinkedIn activity syncing directly from the dashboard.
 - **Direct Database Persistence:** Robust state management ensures your beta status is saved instantly.
@@ -143,7 +151,8 @@ Enzo is an autonomous professio- **Buffer:** +10% safety margin
     GITHUB_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\nyour_private_key_here\n-----END RSA PRIVATE KEY-----"
 
     # Database
-    DATABASE_URL=postgresql://user:password@host:5432/database
+    # Note: Use Transaction Pooler (port 6543) with ?pgbouncer=true for best performance
+    DATABASE_URL="postgresql://user:password@host:6543/database?pgbouncer=true"
 
     # AI
     GEMINI_API_KEY=your_gemini_api_key
@@ -152,6 +161,14 @@ Enzo is an autonomous professio- **Buffer:** +10% safety margin
     DODO_PAYMENTS_API_KEY=your_dodo_api_key
     DODO_PAYMENTS_WEBHOOK_KEY=your_dodo_webhook_key
     DODO_PAYMENTS_PRODUCT_ID=your_payg_product_id
+    DODO_PAYMENTS_MODE=test_mode # or live_mode
+
+    # SMTP (For Feedback)
+    SMTP_HOST=your_smtp_host
+    SMTP_PORT=465
+    SMTP_USER=your_smtp_user
+    SMTP_PASS=your_smtp_password
+    SMTP_FROM=your_support_email
 
     # Optional: Additional OAuth providers
     GOOGLE_CLIENT_ID=your_google_client_id
@@ -418,7 +435,7 @@ Enzo uses a token-based credit system for AI features:
 ### Pricing
 
 - **$2 = 1,000,000 credits**
-- New users start with 10,000 free credits
+- New users start with 500,000 free credits
 - **Minimum purchase: $10** (5M credits)
 
 ### Credit Packages
