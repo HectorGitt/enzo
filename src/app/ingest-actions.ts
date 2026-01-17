@@ -225,7 +225,8 @@ export async function ingestGitHub(
 		);
 
 		if (uniqueActivities.length > 0) {
-			// Credit Check & Deduction
+			// Credit Check & Deduction - DISABLED per user request for manual syncs
+			/*
 			const cost = uniqueActivities.length * 50; // 50 credits per item
 			const { deductCreditsAction } = await import("./credits-actions");
 			const collection = await deductCreditsAction(
@@ -246,6 +247,8 @@ export async function ingestGitHub(
 				};
 			}
 			log(`Charged ${cost} credits.`, "info");
+			*/
+			log(`Processing ${uniqueActivities.length} items (Free Sync).`, "info");
 
 			await saveProfileToDB({
 				...currentProfile,
