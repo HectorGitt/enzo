@@ -359,3 +359,40 @@ export async function generateCustomContent(
 		throw e;
 	}
 }
+
+export async function generateEmbedding(text: string): Promise<number[]> {
+	if (!API_KEY) throw new Error("Missing GEMINI_API_KEY");
+
+	const genAI = new GoogleGenerativeAI(API_KEY);
+	const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
+
+	try {
+		const result = await model.embedContent(text);
+		const embedding = result.embedding;
+		return embedding.values;
+	} catch (e) {
+		console.error("Gemini Embedding Failed:", e);
+		throw e;
+	}
+}
+
+export function cosineSimilarity(vecA: number[], vecB: number[]): number {
+	if (vecA.length !== vecB.length) return 0; // Should not happen if using same model
+
+	let dotProduct = 0;
+	let magA = 0;
+	let magB = 0;
+
+	for (let i = 0; i < vecA.length; i++) {
+		dotProduct += vecA[i] * vecB[i];
+		magA += vecA[i] * vecA[i];
+		magB += vecB[i] * vecB[i];
+	}
+
+	magA = Math.sqrt(magA);
+	magB = Math.sqrt(magB);
+
+	if (magA === 0 || magB === 0) return 0;
+
+	return dotProduct / (magA * magB);
+}

@@ -38,28 +38,15 @@ export async function getProfileByEmail(
 	const user = userRes.rows[0];
 	const userId = user.id;
 
-	// Fetch relations in parallel
-	const [wins, exp, edu, skills, pubs, speaking, raw, templates] =
-		await Promise.all([
-			db.query('SELECT * FROM "Win" WHERE "userId" = $1', [userId]),
-			db.query('SELECT * FROM "Experience" WHERE "userId" = $1', [
-				userId,
-			]),
-			db.query('SELECT * FROM "Education" WHERE "userId" = $1', [userId]),
-			db.query('SELECT * FROM "Skill" WHERE "userId" = $1', [userId]),
-			db.query('SELECT * FROM "Publication" WHERE "userId" = $1', [
-				userId,
-			]),
-			db.query('SELECT * FROM "SpeakingEngagement" WHERE "userId" = $1', [
-				userId,
-			]),
-			db.query('SELECT * FROM "RawActivity" WHERE "userId" = $1', [
-				userId,
-			]),
-			db.query('SELECT * FROM "ResumeTemplate" WHERE "userId" = $1', [
-				userId,
-			]),
-		]);
+	// Fetch relations sequentially to avoid pool exhaustion
+	const wins = await db.query('SELECT * FROM "Win" WHERE "userId" = $1', [userId]);
+	const exp = await db.query('SELECT * FROM "Experience" WHERE "userId" = $1', [userId]);
+	const edu = await db.query('SELECT * FROM "Education" WHERE "userId" = $1', [userId]);
+	const skills = await db.query('SELECT * FROM "Skill" WHERE "userId" = $1', [userId]);
+	const pubs = await db.query('SELECT * FROM "Publication" WHERE "userId" = $1', [userId]);
+	const speaking = await db.query('SELECT * FROM "SpeakingEngagement" WHERE "userId" = $1', [userId]);
+	const raw = await db.query('SELECT * FROM "RawActivity" WHERE "userId" = $1', [userId]);
+	const templates = await db.query('SELECT * FROM "ResumeTemplate" WHERE "userId" = $1', [userId]);
 
 	// Map fields and Parse JSONs
 	return {
@@ -184,16 +171,13 @@ export async function getProfileByUsername(
 	const userId = user.id;
 
 	// Fetch public relations
-	const [wins, exp, edu, skills, pubs, speaking] = await Promise.all([
-		db.query('SELECT * FROM "Win" WHERE "userId" = $1', [userId]),
-		db.query('SELECT * FROM "Experience" WHERE "userId" = $1', [userId]),
-		db.query('SELECT * FROM "Education" WHERE "userId" = $1', [userId]),
-		db.query('SELECT * FROM "Skill" WHERE "userId" = $1', [userId]),
-		db.query('SELECT * FROM "Publication" WHERE "userId" = $1', [userId]),
-		db.query('SELECT * FROM "SpeakingEngagement" WHERE "userId" = $1', [
-			userId,
-		]),
-	]);
+	// Fetch public relations sequentially
+	const wins = await db.query('SELECT * FROM "Win" WHERE "userId" = $1', [userId]);
+	const exp = await db.query('SELECT * FROM "Experience" WHERE "userId" = $1', [userId]);
+	const edu = await db.query('SELECT * FROM "Education" WHERE "userId" = $1', [userId]);
+	const skills = await db.query('SELECT * FROM "Skill" WHERE "userId" = $1', [userId]);
+	const pubs = await db.query('SELECT * FROM "Publication" WHERE "userId" = $1', [userId]);
+	const speaking = await db.query('SELECT * FROM "SpeakingEngagement" WHERE "userId" = $1', [userId]);
 
 	return {
 		...user,
@@ -648,4 +632,66 @@ export async function saveProfileToDB(profile: UserProfile): Promise<boolean> {
 	}
 
 	return true;
+}
+
+// --- Chat Persistence Helpers ---
+
+export async function createChatSession(userId: string): Promise<string> {
+	const res = await db.query(
+		`INSERT INTO "ChatSession" (id, "userId", "createdAt", "updatedAt")
+         VALUES (uuid_generate_v4(), $1, NOW(), NOW())
+         RETURNING id`,
+		[userId]
+	);
+	return res.rows[0].id;
+}
+
+export async function getLatestChatSession(
+	userId: string,
+	limit: number = 50,
+	before?: string
+): Promise<{ id: string; messages: any[] } | null> {
+	const sessionRes = await db.query(
+		`SELECT * FROM "ChatSession" WHERE "userId" = $1 ORDER BY "updatedAt" DESC LIMIT 1`,
+		[userId]
+	);
+
+	if (sessionRes.rowCount === 0) return null;
+
+	const sessionId = sessionRes.rows[0].id;
+
+	// Build Pagination Query
+	let query = `SELECT * FROM "ChatMessage" WHERE "sessionId" = $1`;
+	const params: any[] = [sessionId];
+
+	if (before) {
+		query += ` AND "createdAt" < $2`;
+		params.push(before);
+	}
+
+	// Sort by DESC to get latest/previous N messages
+	query += ` ORDER BY "createdAt" DESC LIMIT $${params.length + 1}`;
+	params.push(limit);
+
+	const messagesRes = await db.query(query, params);
+
+	return {
+		id: sessionId,
+		// Reverse back to Ascending for Chat UI
+		messages: messagesRes.rows.reverse(),
+	};
+}
+
+export async function addChatMessage(sessionId: string, role: "user" | "model", content: string) {
+	await db.query(
+		`INSERT INTO "ChatMessage" (id, "sessionId", role, content, "createdAt")
+         VALUES (uuid_generate_v4(), $1, $2, $3, NOW())`,
+		[sessionId, role, content]
+	);
+
+	// Update session timestamp
+	await db.query(
+		`UPDATE "ChatSession" SET "updatedAt" = NOW() WHERE id = $1`,
+		[sessionId]
+	);
 }

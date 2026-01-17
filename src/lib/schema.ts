@@ -8,6 +8,7 @@ export interface Win {
 	tags: string[];
 	status: "pending" | "approved" | "rejected";
 	showOnResume?: boolean;
+	embedding?: number[];
 }
 
 export interface Experience {
@@ -106,6 +107,7 @@ export interface UserProfile {
 	tier: "free" | "pro"; // Default 'free'
 	contentGenerationUsed?: number; // Number of content generations used (for free tier limit)
 	onboardingCompleted?: boolean; // Whether user has completed onboarding
+	chatSessions?: ChatSession[];
 }
 
 export interface RawActivity {
@@ -126,4 +128,19 @@ export interface SavedContent {
 	title?: string;
 	tags?: string[];
 	createdAt: string;
+}
+
+export interface ChatMessage {
+	id: string;
+	role: "user" | "model";
+	content: string;
+	createdAt: string;
+}
+
+export interface ChatSession {
+	id: string;
+	userId: string;
+	messages: ChatMessage[];
+	createdAt: string;
+	updatedAt: string;
 }

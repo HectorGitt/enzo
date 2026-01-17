@@ -14,6 +14,7 @@ import { revalidatePath } from "next/cache";
 import { Win } from "@/lib/schema";
 import crypto from "crypto";
 import { checkCreditsAction, deductCreditsAction } from "./credits-actions";
+import { generateEmbedding } from "@/lib/gemini";
 
 // Minimum credits required to start an AI operation (estimated)
 const MIN_CREDITS_REQUIRED = 100;
@@ -73,7 +74,16 @@ export async function enhanceWinWithAI(
 				]),
 			], // Merge tags
 			status: "approved" as const, // Auto-approve if AI enhanced
+			embedding: [] as number[], // Placeholder, will set next
 		};
+
+		// Generate Embedding
+		try {
+			const textToEmbed = `${updatedWin.title} ${updatedWin.summary} ${updatedWin.tags.join(" ")}`;
+			updatedWin.embedding = await generateEmbedding(textToEmbed);
+		} catch (e) {
+			console.warn("Embedding failed during enhancement", e);
+		}
 
 		// Update list
 		const newWins = [...profile.wins];
@@ -143,6 +153,17 @@ export async function generateRepoHighlights(
 			tags: [...(h.tags || []), "ai-generated", repoName],
 			source: "github" as const, // Keep as github since it's from GitHub data
 			status: "approved" as const,
+			embedding: [] as number[],
+		}));
+
+		// Generate Embeddings for all new wins (Parallel)
+		await Promise.all(newWins.map(async (w) => {
+			try {
+				const textToEmbed = `${w.title} ${w.summary} ${w.tags.join(" ")}`;
+				w.embedding = await generateEmbedding(textToEmbed);
+			} catch (e) {
+				console.warn("Embedding failed during repo highlight gen", e);
+			}
 		}));
 
 		await saveProfileToDB({
