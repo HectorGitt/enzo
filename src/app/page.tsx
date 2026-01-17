@@ -323,7 +323,7 @@ export default function Home() {
 									</div>
 									<h2 className="text-4xl font-bold mb-6">Zero-Touch Ingestion.</h2>
 									<p className="text-lg text-gray-400 mb-8 leading-relaxed">
-										You don't need to manually update a database. Enzo lives in your terminal and your repo.
+										You don't need to manually update a database. Enzo connects to your GitHub and runs in the background.
 										It parses your commit history, filters the noise, and pushes updates to your portfolio automatically.
 									</p>
 									<div className="flex gap-4">
@@ -352,31 +352,34 @@ export default function Home() {
 												<div className="w-3 h-3 rounded-full bg-yellow-500/20"></div>
 												<div className="w-3 h-3 rounded-full bg-green-500/20"></div>
 											</div>
-											<div className="ml-auto text-xs text-gray-600">enzo-cli</div>
+											<div className="ml-auto text-xs text-gray-600">enzo-sync-worker — 80x24</div>
 										</div>
 										<div className="p-6 space-y-2">
 											<div className="text-gray-300">
-												<span className="text-green-500">➜</span> <span className="text-cyan-400">~</span> enzo sync --source=github
+												<span className="text-green-500">➜</span> <span className="text-cyan-400">~</span> enzo listen --webhook=github
 											</div>
 											<div className="text-gray-500">
-												[+] Authenticating with GitHub... <span className="text-green-500">OK</span><br />
-												[+] Scanning repositories (3/3)...<br />
+												[+] Webhook received: push event (3 commits)<br />
+												[+] Authenticating... <span className="text-green-500">OK</span><br />
 												<span className="pl-4">- facebook/react: 3 new commits</span><br />
 												<span className="pl-4">- vercel/next.js: 1 merged PR</span>
 											</div>
 											<div className="text-gray-300 mt-4">
-												<span className="text-green-500">➜</span> <span className="text-cyan-400">~</span> enzo publish --target=enzo.stability.com/p/ola
+												<span className="text-green-500">➜</span> <span className="text-cyan-400">~</span> enzo process --ai=gemini-2.5-flash
 											</div>
 											<div className="text-gray-500 mt-2">
-												[+] Deploying to Edge... <span className="text-green-500">OK</span><br />
-												[✓] Portfolio live at <span className="text-blue-400 underline">https://enzo.stability.com/p/ola</span>
-											</div>
-											<div className="text-gray-500 mt-2">
-												[+] Analyzing impact with Gemini 2.5...<br />
+												[+] Analyzed impact:<br />
 												<span className="pl-4 text-gray-600">- Ignored: "fix typo" (Noise)</span><br />
 												<span className="pl-4 text-blue-400">- Processed: "Optimized hydration logic" (Impact: High)</span>
 											</div>
 											<div className="text-gray-300 mt-4">
+												<span className="text-green-500">➜</span> <span className="text-cyan-400">~</span> enzo deploy --target=enzo.stability.com
+											</div>
+											<div className="text-gray-500 mt-2">
+												[+] Updating live resume... <span className="text-green-500">OK</span><br />
+												[✓] New achievements live.
+											</div>
+											<div className="mt-4 flex items-center gap-2">
 												<span className="text-green-500">➜</span> <span className="text-cyan-400">~</span> <span className="w-2 h-4 bg-gray-500 animate-pulse inline-block align-middle"></span>
 											</div>
 										</div>
@@ -496,7 +499,6 @@ export default function Home() {
 									<h4 className="font-bold mb-4">Product</h4>
 									<ul className="space-y-2 text-sm text-[var(--text-secondary)]">
 										<li><a href="#features" className="hover:text-black">Features</a></li>
-										<li><a href="#pricing" className="hover:text-black">Pricing</a></li>
 										<li><Link href="/dashboard/chat" className="hover:text-black">AI Chat</Link></li>
 										<li><Link href="/login" className="hover:text-black">Log In</Link></li>
 									</ul>
@@ -510,7 +512,7 @@ export default function Home() {
 								</div>
 							</div>
 							<div className="text-center pt-8 border-t border-black/5 text-sm text-[var(--text-muted)]">
-								© {new Date().getFullYear()} Project Enzo. Powered by <span className="font-mono text-xs bg-gray-100 px-1 py-0.5 rounded">Gemini 1.5 Flash</span>
+								© {new Date().getFullYear()} Project Enzo.
 							</div>
 						</div>
 					</footer>
