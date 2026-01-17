@@ -13,6 +13,8 @@ export async function fetchProfile() {
 		({
 			email,
 			name: session?.user?.name || "New User",
+			// @ts-ignore
+			username: session?.user?.username,
 			bio: "",
 			title: "Professional",
 			wins: [],

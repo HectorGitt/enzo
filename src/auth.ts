@@ -40,6 +40,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 				token.provider = account.provider; // Store the provider
 			}
 			if (profile) {
+				console.log("Auth Profile:", profile); // DEBUG
 				token.username = profile.login;
 			}
 			return token;
@@ -50,7 +51,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 			// @ts-ignore
 			session.provider = token.provider; // Expose provider in session
 			// @ts-ignore
-			if (session.user) session.user.username = token.username;
+			if (session.user) {
+				// @ts-ignore
+				session.user.username = token.username;
+				console.log("Session User Username:", token.username); // DEBUG
+			}
 			return session;
 		},
 		authorized: async ({ auth }) => {
