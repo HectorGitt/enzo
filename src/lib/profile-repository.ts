@@ -102,6 +102,51 @@ export async function getProfileByEmail(
 	} as UserProfile;
 }
 
+/**
+ * Gets profile by email, or creates a minimal one if none exists.
+ * Used for new users who haven't completed onboarding yet.
+ */
+export async function getOrCreateProfile(
+	email: string,
+	name?: string
+): Promise<UserProfile> {
+	let profile = await getProfileByEmail(email);
+	if (profile) return profile;
+
+	// Create a minimal profile for new users
+	const username = email.split("@")[0].replace(/[^a-zA-Z0-9]/g, "") + Math.floor(Math.random() * 1000);
+
+	const res = await db.query(
+		`INSERT INTO "UserProfile" (name, email, username, bio, title, credits, tier, "updatedAt")
+		 VALUES ($1, $2, $3, '', 'Professional', 10000, 'free', NOW())
+		 RETURNING id`,
+		[name || "New User", email, username]
+	);
+
+	const userId = res.rows[0].id;
+
+	// Return minimal profile object
+	return {
+		id: userId,
+		email,
+		name: name || "New User",
+		username,
+		bio: "",
+		title: "Professional",
+		credits: 10000,
+		tier: "free",
+		wins: [],
+		experience: [],
+		education: [],
+		skills: [],
+		publications: [],
+		speaking: [],
+		rawActivities: [],
+		connectedProviders: [],
+		waitlist: [],
+	} as UserProfile;
+}
+
 export async function getProfileByUsername(
 	username: string
 ): Promise<UserProfile | null> {

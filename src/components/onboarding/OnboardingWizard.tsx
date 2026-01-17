@@ -29,7 +29,7 @@ export function OnboardingWizard({ session }: OnboardingWizardProps) {
         setLoading(true);
         try {
             // @ts-ignore
-            await ingestGitHub(session?.user?.username, session?.accessToken);
+            await ingestGitHub(session?.user?.username, session?.accessToken, session?.user?.email, session?.user?.name);
             router.refresh();
         } catch (e) {
             console.error(e);

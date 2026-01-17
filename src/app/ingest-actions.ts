@@ -1,6 +1,6 @@
 "use server";
 
-import { getProfileByEmail, saveProfileToDB } from "@/lib/profile-repository";
+import { getProfileByEmail, getOrCreateProfile, saveProfileToDB } from "@/lib/profile-repository";
 import { UserProfile, Win } from "@/lib/schema";
 import {
 	fetchRecentPRs,
@@ -39,7 +39,7 @@ export async function syncGitHubWins(): Promise<{
 		};
 	}
 
-	return await ingestGitHub(username, token, email);
+	return await ingestGitHub(username, token, email, session?.user?.name || undefined);
 }
 
 export async function ingestLinkedIn(formData: FormData) {
@@ -109,6 +109,7 @@ export async function ingestGitHub(
 	username: string,
 	token: string,
 	email: string,
+	name?: string,
 ) {
 	const logs: ProcessingLog[] = [];
 	const log = (msg: string, level: "info" | "warn" | "error" = "info") => {
@@ -157,9 +158,8 @@ export async function ingestGitHub(
 								id: crypto.randomUUID(), // Use valid UUID
 								source: "github",
 								externalId: c.sha,
-								title: `Commit to ${repo.name}: ${
-									c.commit.message.split("\n")[0]
-								}`,
+								title: `Commit to ${repo.name}: ${c.commit.message.split("\n")[0]
+									}`,
 								content: `${c.commit.message}\n${c.html_url}`,
 								metadataJson: JSON.stringify({
 									type: "commit",
@@ -208,8 +208,8 @@ export async function ingestGitHub(
 		newActivities = [...newActivities, ...prActivities];
 
 		// 4. Save to Profile
-		const currentProfile = await getProfileByEmail(email);
-		if (!currentProfile) throw new Error("Profile not found");
+		// Auto-create profile for new users
+		const currentProfile = await getOrCreateProfile(email, name);
 
 		// Dedup against existing rawActivities
 		const existingIds = new Set(
@@ -279,7 +279,7 @@ export async function ingestGitHub(
 					lastSyncLog: JSON.stringify(logs),
 				});
 			}
-		} catch {}
+		} catch { }
 		return { success: false, count: 0, logs };
 	}
 }
