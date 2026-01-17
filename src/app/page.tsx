@@ -294,7 +294,7 @@ export default function Home() {
 									</div>
 									<h3 className="text-xl font-bold mb-3">Public Portfolio</h3>
 									<p className="text-[var(--text-secondary)]">
-										Claim `enzo.dev/p/yourname`. A verified, always-updated portfolio that proves your skills with actual code evidence.
+										Claim `enzo.stability.com/p/yourname`. A verified, always-updated portfolio that proves your skills with actual code evidence.
 									</p>
 								</motion.div>
 
@@ -363,6 +363,13 @@ export default function Home() {
 												[+] Scanning repositories (3/3)...<br />
 												<span className="pl-4">- facebook/react: 3 new commits</span><br />
 												<span className="pl-4">- vercel/next.js: 1 merged PR</span>
+											</div>
+											<div className="text-gray-300 mt-4">
+												<span className="text-green-500">➜</span> <span className="text-cyan-400">~</span> enzo publish --target=enzo.stability.com/p/ola
+											</div>
+											<div className="text-gray-500 mt-2">
+												[+] Deploying to Edge... <span className="text-green-500">OK</span><br />
+												[✓] Portfolio live at <span className="text-blue-400 underline">https://enzo.stability.com/p/ola</span>
 											</div>
 											<div className="text-gray-500 mt-2">
 												[+] Analyzing impact with Gemini 2.5...<br />
