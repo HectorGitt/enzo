@@ -33,7 +33,7 @@ export function DashboardSidebar() {
 						href="/"
 						className="text-xl font-bold tracking-tighter text-[var(--text-primary)] flex items-center gap-2"
 					>
-						<div className="w-8 h-8 rounded-lg bg-black text-white flex items-center justify-center font-bold">E</div>
+						<img src="/enzo.png" alt="Enzo" className="w-8 h-8 rounded-lg" />
 						<span>ENZO</span>
 					</Link>
 				)}
@@ -127,8 +127,8 @@ function NavItem({
 			<Link
 				href={href}
 				className={`flex justify-center items-center w-10 h-10 rounded-lg transition-colors ${active
-						? "bg-[var(--accent-cyan)] text-white"
-						: "text-[var(--text-secondary)] hover:bg-black/5 hover:text-[var(--text-primary)]"
+					? "bg-[var(--accent-cyan)] text-white"
+					: "text-[var(--text-secondary)] hover:bg-black/5 hover:text-[var(--text-primary)]"
 					}`}
 				title={label}
 			>
@@ -141,8 +141,8 @@ function NavItem({
 		<Link
 			href={href}
 			className={`flex px-4 py-2.5 rounded-lg text-sm font-medium transition-colors items-center gap-3 ${active
-					? "bg-[var(--accent-cyan)] text-white"
-					: "text-[var(--text-secondary)] hover:bg-black/5 hover:text-[var(--text-primary)]"
+				? "bg-[var(--accent-cyan)] text-white"
+				: "text-[var(--text-secondary)] hover:bg-black/5 hover:text-[var(--text-primary)]"
 				}`}
 		>
 			<span>{icon}</span>

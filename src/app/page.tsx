@@ -42,10 +42,11 @@ export default function Home() {
 					>
 						<Link
 							href="/"
-							className="text-xl font-bold tracking-tighter text-[var(--text-primary)]"
 							aria-label="Enzo Home"
+							className="text-xl font-bold tracking-tighter text-[var(--text-primary)] flex items-center gap-2"
 						>
-							Enzo
+							<img src="/enzo.png" alt="Enzo" className="w-8 h-8 rounded-lg" />
+							<span>Enzo</span>
 						</Link>
 						<div className="flex gap-4 text-sm font-medium text-[var(--text-secondary)]">
 							<a
