@@ -99,7 +99,6 @@ export function DashboardSidebar() {
 
 				{/* Sign Out */}
 				<div className={`flex items-center justify-between ${isCollapsed ? 'justify-center' : ''} px-2`}>
-					{!isCollapsed && <span className="text-xs text-[var(--text-muted)] font-mono">User</span>}
 					<SignOutButton collapsed={isCollapsed} />
 				</div>
 			</div>
