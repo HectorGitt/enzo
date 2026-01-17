@@ -29,11 +29,11 @@ import { toast } from "sonner";
 
 // Rate: $2 per 1,000,000 credits (1 token = 1 credit)
 const CREDITS_PER_DOLLAR = 500000; // $1 = 500K credits ($2 per million)
-const MIN_PURCHASE_DOLLARS = 1; // Minimum $1 purchase
+const MIN_PURCHASE_DOLLARS = 10; // Minimum $10 purchase
 
 const CREDIT_OPTIONS = [
-	{ credits: 500000, price: 1, label: "500K Credits" },
-	{ credits: 5000000, price: 10, label: "5M Credits", popular: true },
+	{ credits: 5000000, price: 10, label: "5M Credits" },
+	{ credits: 12500000, price: 25, label: "12.5M Credits", popular: true },
 	{ credits: 25000000, price: 50, label: "25M Credits" },
 ];
 
@@ -71,15 +71,15 @@ function CreditsPageContent() {
 		// Handle payment status and clean up URL
 		if (success === "true" && status === "success") {
 			toast.success(
-				"Payment successful! Credits have been added to your account."
+				"Payment successful! Credits have been added to your account.",
 			);
 			// Clean URL using history API
-			window.history.replaceState({}, '', '/dashboard/credits');
+			window.history.replaceState({}, "", "/dashboard/credits");
 			setUrlCleaned(true);
 		} else if (success === "true" && status === "failed") {
 			toast.error("Payment failed. No credits were added.");
 			// Clean URL using history API
-			window.history.replaceState({}, '', '/dashboard/credits');
+			window.history.replaceState({}, "", "/dashboard/credits");
 			setUrlCleaned(true);
 		} else {
 			// No payment params, URL is already clean
@@ -103,22 +103,28 @@ function CreditsPageContent() {
 				setBalance(0);
 			}
 		}, 15000);
-		
+
 		return () => clearTimeout(fallbackTimer);
 	}, [balance]);
 
 	const loadBalance = async () => {
 		try {
 			setBalanceLoading(true);
-			
+
 			// Add timeout to prevent infinite loading
 			const timeoutPromise = new Promise((_, reject) => {
-				setTimeout(() => reject(new Error('Balance load timeout')), 10000); // 10 second timeout
+				setTimeout(
+					() => reject(new Error("Balance load timeout")),
+					10000,
+				); // 10 second timeout
 			});
-			
+
 			const balancePromise = checkCreditsAction(0);
-			const res = await Promise.race([balancePromise, timeoutPromise]) as any;
-			
+			const res = (await Promise.race([
+				balancePromise,
+				timeoutPromise,
+			])) as any;
+
 			// Always set balance even if not allowed (e.g. 0 or insufficient)
 			// checkCreditsAction now returns currentCredits even on error/fail usually
 			if (typeof res.currentCredits === "number") {
@@ -127,7 +133,7 @@ function CreditsPageContent() {
 				setBalance(0); // Fallback
 			}
 		} catch (e) {
-			console.error('Balance load failed:', e);
+			console.error("Balance load failed:", e);
 			setBalance(0);
 		} finally {
 			setBalanceLoading(false);
@@ -179,12 +185,10 @@ function CreditsPageContent() {
 						<Zap className="w-6 h-6 text-yellow-500 fill-yellow-500" />
 						{balanceLoading ? (
 							<Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+						) : balance !== null ? (
+							balance.toLocaleString()
 						) : (
-							balance !== null ? (
-								balance.toLocaleString()
-							) : (
-								<span className="text-muted-foreground">0</span>
-							)
+							<span className="text-muted-foreground">0</span>
 						)}
 					</div>
 				</div>
@@ -292,8 +296,8 @@ function CreditsPageContent() {
 								!isNaN(parseFloat(customAmount))
 									? Math.floor(
 											parseFloat(customAmount) *
-												CREDITS_PER_DOLLAR
-									  ).toLocaleString()
+												CREDITS_PER_DOLLAR,
+										).toLocaleString()
 									: "0"}{" "}
 								credits
 							</div>
