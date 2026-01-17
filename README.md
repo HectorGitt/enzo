@@ -62,6 +62,7 @@ Enzo is an autonomous professio- **Buffer:** +10% safety margin
 - **Token Estimation:** See estimated token usage before generating (input + output + thinking tokens).
 - **Real Token Usage:** Actual Gemini API costs billed to your account.
 - **Save to Library:** Store generated content for easy reuse.
+- **Free Tier Limit:** Free users can generate content once; upgrade to Pro for unlimited usage.
 
 ### 6. **Public Portfolio**
 
@@ -85,6 +86,7 @@ Enzo is an autonomous professio- **Buffer:** +10% safety margin
 - **Usage Transparency:** See estimated token costs before AI operations and actual usage after.
 - **Payment Status Handling:** Robust error handling for failed payments with proper user feedback.
 - **Timeout Protection:** Automatic fallbacks prevent infinite loading states.
+- **Free Tier Limits:** Free users get 500,000 credits and can generate content once; upgrade to Pro for unlimited usage.
 
 ### 9. **Authentication & Security**
 
