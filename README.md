@@ -3,7 +3,15 @@
 > **End Career Amnesia.**  
 > Automatically sync your GitHub commits, PRs, and achievements into a living resume and portfolio.
 
-Enzo is an autonomous professional identity platform. It connects to your engineering work stream (GitHub, etc.), analyzes your contributions to find "Wins", and helps you publish them as a perfect PDF resume or a public portfolio.
+Enzo is an autonomous professio- **Buffer:** +10% safety margin
+
+### Pricing
+
+- **$2 = 1,000,000 credits**
+- New users start with 500,000 free credits
+- **Minimum purchase: $10** (5M credits)\*$2 = 1,000,000 credits\*\*
+- New users start with 500,000 free credits
+- **Minimum purchase: $10** (5M credits)dentity platform. It connects to your engineering work stream (GitHub, etc.), analyzes your contributions to find "Wins", and helps you publish them as a perfect PDF resume or a public portfolio.
 
 ![Enzo Homepage](public/enzo.png)
 

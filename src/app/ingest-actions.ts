@@ -78,7 +78,7 @@ export async function ingestLinkedIn(formData: FormData) {
 			skills: [],
 			publications: [],
 			speaking: [],
-			credits: 10000,
+			credits: 500000,
 			tier: "free",
 		} as UserProfile);
 
@@ -106,7 +106,7 @@ export async function ingestLinkedIn(formData: FormData) {
 export async function ingestGitHub(
 	username: string,
 	token: string,
-	email: string
+	email: string,
 ) {
 	const logs: ProcessingLog[] = [];
 	const log = (msg: string, level: "info" | "warn" | "error" = "info") => {
@@ -143,12 +143,12 @@ export async function ingestGitHub(
 							repo.full_name.split("/")[0],
 							repo.name,
 							username,
-							500
+							500,
 						);
 						if (commits.length > 0) {
 							log(
 								`[${repo.name}] Found ${commits.length} commits`,
-								"info"
+								"info",
 							);
 							// Convert to RawActivity format
 							const commitActivities = commits.map((c) => ({
@@ -172,7 +172,7 @@ export async function ingestGitHub(
 					} catch (e) {
 						// ignore individual repo fail
 					}
-				})
+				}),
 			);
 		}
 
@@ -183,7 +183,7 @@ export async function ingestGitHub(
 
 		const prActivities = prs.map((pr: any) => {
 			const repoMatch = pr.html_url.match(
-				/github\.com\/[^\/]+\/([^\/]+)/
+				/github\.com\/[^\/]+\/([^\/]+)/,
 			);
 			const repoName = repoMatch ? repoMatch[1] : "unknown-repo";
 			return {
@@ -211,15 +211,15 @@ export async function ingestGitHub(
 
 		// Dedup against existing rawActivities
 		const existingIds = new Set(
-			(currentProfile.rawActivities || []).map((a) => a.id)
+			(currentProfile.rawActivities || []).map((a) => a.id),
 		);
 		const uniqueActivities = newActivities.filter(
-			(a) => !existingIds.has(a.id)
+			(a) => !existingIds.has(a.id),
 		);
 
 		log(
 			`Identified ${uniqueActivities.length} new raw activities.`,
-			"info"
+			"info",
 		);
 
 		if (uniqueActivities.length > 0) {
@@ -228,13 +228,13 @@ export async function ingestGitHub(
 			const { deductCreditsAction } = await import("./credits-actions");
 			const collection = await deductCreditsAction(
 				cost,
-				`Smart Ingestion: ${uniqueActivities.length} items`
+				`Smart Ingestion: ${uniqueActivities.length} items`,
 			);
 
 			if (!collection.success) {
 				log(
 					`❌ SKIPPED: Insufficient credits (${cost} needed).`,
-					"error"
+					"error",
 				);
 				return {
 					success: false,

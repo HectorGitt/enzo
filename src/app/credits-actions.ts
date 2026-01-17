@@ -13,10 +13,10 @@ export async function checkCreditsAction(cost: number) {
 	try {
 		const res = await db.query(
 			'SELECT credits, tier FROM "UserProfile" WHERE email = $1',
-			[session.user.email]
+			[session.user.email],
 		);
 
-		let credits = 10000; // Default fallback
+		let credits = 500000; // Default fallback
 		if (res.rows.length > 0) {
 			credits = res.rows[0].credits;
 		}
@@ -48,11 +48,11 @@ export async function deductCreditsAction(cost: number, reason: string) {
 		// Atomic update to prevent race conditions (basic)
 		await db.query(
 			'UPDATE "UserProfile" SET credits = credits - $1 WHERE email = $2 AND credits >= $1',
-			[cost, session.user.email]
+			[cost, session.user.email],
 		);
 
 		console.log(
-			`[Credits] Deducted ${cost} from ${session.user.email} for ${reason}`
+			`[Credits] Deducted ${cost} from ${session.user.email} for ${reason}`,
 		);
 		revalidatePath("/dashboard");
 		return { success: true };
@@ -71,7 +71,7 @@ export async function addCreditsAction(amount: number) {
 	try {
 		await db.query(
 			'UPDATE "UserProfile" SET credits = credits + $1 WHERE email = $2',
-			[amount, session.user.email]
+			[amount, session.user.email],
 		);
 		revalidatePath("/dashboard");
 		return { success: true };
@@ -83,7 +83,7 @@ export async function addCreditsAction(amount: number) {
 
 export async function createCheckoutSessionAction(
 	credits: number,
-	priceInDollars: number
+	priceInDollars: number,
 ) {
 	const session = await auth();
 	if (!session?.user?.email || !session?.user?.name) {
@@ -101,7 +101,7 @@ export async function createCheckoutSessionAction(
 		} else {
 			console.log(
 				"Dodo API Key present:",
-				process.env.DODO_PAYMENTS_API_KEY.substring(0, 5) + "..."
+				process.env.DODO_PAYMENTS_API_KEY.substring(0, 5) + "...",
 			);
 		}
 
