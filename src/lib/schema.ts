@@ -103,7 +103,7 @@ export interface UserProfile {
 	savedContent?: SavedContent[];
 	waitlist?: string[]; // Array of integration IDs
 	credits: number; // Default 500000
-	tier: 'free' | 'pro'; // Default 'free'
+	contentGenerationUsed?: number; // Number of content generations used (for free tier limit)
 }
 
 export interface RawActivity {

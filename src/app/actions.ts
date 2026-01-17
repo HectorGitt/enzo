@@ -26,6 +26,7 @@ export async function fetchProfile() {
 			waitlist: [],
 			credits: 500000,
 			tier: "free",
+			contentGenerationUsed: 0,
 		} as UserProfile)
 	);
 }

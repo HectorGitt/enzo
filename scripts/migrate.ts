@@ -209,7 +209,16 @@ async function runMigrations() {
             ALTER TABLE "UserProfile" 
             ADD COLUMN IF NOT EXISTS "tier" TEXT DEFAULT 'free';
         `);
-		// Enforce check constraint if needed, but keeping it simple for now
+		console.log("✅ Verified");
+
+		// 8. UserProfile.contentGenerationUsed Column
+		console.log(
+			"\n--- [8/8] 'UserProfile.contentGenerationUsed' Column ---",
+		);
+		await db.query(`
+            ALTER TABLE "UserProfile" 
+            ADD COLUMN IF NOT EXISTS "contentGenerationUsed" INTEGER DEFAULT 0;
+        `);
 		console.log("✅ Verified");
 
 		// Optional: Backfill usernames if needed (Keeping it simple for now)

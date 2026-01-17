@@ -210,6 +210,22 @@ export async function generateCustomContentAction(
 	const email = session?.user?.email as string;
 	if (!email) throw new Error("Unauthorized");
 
+	// Get user profile to check tier
+	const profile = await getProfileByEmail(email);
+	if (!profile) throw new Error("Profile not found");
+
+	// Check if user is free tier and has already used content generation
+	if (profile.tier === "free") {
+		// For free users, limit to 1 content generation
+		const usageCount = profile.contentGenerationUsed || 0;
+		if (usageCount >= 1) {
+			return {
+				success: false,
+				error: "Free users can only generate content once. Upgrade to Pro for unlimited content generation.",
+			};
+		}
+	}
+
 	// Check if user has enough credits
 	const creditCheck = await checkCreditsAction(MIN_CREDITS_REQUIRED);
 	if (!creditCheck.allowed) {
@@ -221,6 +237,7 @@ export async function generateCustomContentAction(
 
 	try {
 		const result = await generateCustomContent(context, type, config);
+				...profile,
 
 		// Deduct actual tokens used
 		await deductCreditsAction(result.tokensUsed, `AI content: ${type}`);

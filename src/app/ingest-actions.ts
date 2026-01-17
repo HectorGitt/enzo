@@ -80,6 +80,7 @@ export async function ingestLinkedIn(formData: FormData) {
 			speaking: [],
 			credits: 500000,
 			tier: "free",
+			contentGenerationUsed: 0,
 		} as UserProfile);
 
 	const updatedProfile: UserProfile = {
