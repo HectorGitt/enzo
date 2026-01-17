@@ -81,6 +81,7 @@ export async function ingestLinkedIn(formData: FormData) {
 			credits: 500000,
 			tier: "free",
 			contentGenerationUsed: 0,
+			onboardingCompleted: false,
 		} as UserProfile);
 
 	const updatedProfile: UserProfile = {

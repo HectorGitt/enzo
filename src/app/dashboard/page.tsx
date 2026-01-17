@@ -12,12 +12,13 @@ export default async function DashboardPage() {
 	const profile = await fetchProfile();
 	const session = await auth();
 
-	// Simple check for "Empty Profile" to trigger onboarding
-	const isNewUser =
+	// Check if user needs onboarding (new user or hasn't completed onboarding)
+	const needsOnboarding = !profile.onboardingCompleted && (
 		(profile.experience?.length || 0) === 0 &&
-		(profile.wins?.length || 0) === 0;
+		(profile.wins?.length || 0) === 0
+	);
 
-	if (isNewUser) {
+	if (needsOnboarding) {
 		return <OnboardingWizard session={session} />;
 	}
 

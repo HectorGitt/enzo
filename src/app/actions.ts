@@ -27,6 +27,7 @@ export async function fetchProfile() {
 			credits: 500000,
 			tier: "free",
 			contentGenerationUsed: 0,
+			onboardingCompleted: false,
 		} as UserProfile)
 	);
 }
@@ -38,12 +39,16 @@ export async function updateProfile(profile: UserProfile) {
 }
 export async function completeOnboarding() {
 	const profile = await fetchProfile();
-	if (!profile.wins) profile.wins = [];
+	if (!profile) throw new Error("Profile not found");
 
-	// No default milestone win for new accounts
+	// Mark onboarding as completed
+	const updatedProfile = {
+		...profile,
+		onboardingCompleted: true,
+	};
 
-	await updateProfile(profile);
-	return { success: true };
+	await saveProfileToDB(updatedProfile);
+	revalidatePath("/dashboard");
 }
 import { Win } from "@/lib/schema";
 import { revalidatePath } from "next/cache";

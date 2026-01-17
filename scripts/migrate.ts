@@ -221,6 +221,14 @@ async function runMigrations() {
         `);
 		console.log("✅ Verified");
 
+		// 9. UserProfile.onboardingCompleted Column
+		console.log("\n--- [9/9] 'UserProfile.onboardingCompleted' Column ---");
+		await db.query(`
+            ALTER TABLE "UserProfile" 
+            ADD COLUMN IF NOT EXISTS "onboardingCompleted" BOOLEAN DEFAULT false;
+        `);
+		console.log("✅ Verified");
+
 		// Optional: Backfill usernames if needed (Keeping it simple for now)
 		// If we really need the complex logic from add_username_column.ts, we can add it here.
 		// For a general "migrate" script, usually schema changes are enough.
