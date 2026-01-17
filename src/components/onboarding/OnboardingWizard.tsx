@@ -14,19 +14,20 @@ interface OnboardingWizardProps {
 
 export function OnboardingWizard({ session }: OnboardingWizardProps) {
     const [step, setStep] = useState(1);
-    const [loading, setLoading] = useState(false);
+    const [isSyncing, setIsSyncing] = useState(false);
+    const [isSkipping, setIsSkipping] = useState(false);
     const router = useRouter();
 
     const handleLinkedIn = async () => {
-        setLoading(true);
+        setIsSkipping(true); // Re-use skipping state for LinkedIn general loading if needed, or separate
         // Simulate file upload
         await ingestLinkedIn(new FormData());
-        setLoading(false);
+        setIsSkipping(false);
         setStep(2);
     };
 
     const handleGitHubSync = async () => {
-        setLoading(true);
+        setIsSyncing(true);
         try {
             // @ts-ignore
             await ingestGitHub(session?.user?.username, session?.accessToken, session?.user?.email, session?.user?.name);
@@ -35,18 +36,18 @@ export function OnboardingWizard({ session }: OnboardingWizardProps) {
             console.error(e);
             toast.error("Failed to sync GitHub");
         }
-        setLoading(false);
+        setIsSyncing(false);
     };
 
     const handleSkip = async () => {
         if (step === 1) {
             setStep(2);
         } else {
-            setLoading(true);
+            setIsSkipping(true);
             const { completeOnboarding } = await import('@/app/actions');
             await completeOnboarding();
             router.refresh();
-            setLoading(false);
+            setIsSkipping(false);
         }
     };
 
@@ -63,7 +64,9 @@ export function OnboardingWizard({ session }: OnboardingWizardProps) {
                             <h3 className="font-bold">Upload LinkedIn PDF</h3>
                             <p className="text-xs text-[var(--text-muted)]">We'll extract your experience and skills automatically.</p>
                         </div>
-                        <button onClick={handleSkip} className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]">Skip for now</button>
+                        <button onClick={handleSkip} disabled={isSkipping} className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:opacity-50">
+                            {isSkipping ? 'Skipping...' : 'Skip for now'}
+                        </button>
                     </div>
                 )}
 
@@ -97,14 +100,16 @@ export function OnboardingWizard({ session }: OnboardingWizardProps) {
                                 </div>
                                 <button
                                     onClick={handleGitHubSync}
-                                    disabled={loading}
+                                    disabled={isSyncing || isSkipping}
                                     className="w-full bg-[var(--accent-cyan)] text-black font-bold py-2 rounded disabled:opacity-50"
                                 >
-                                    {loading ? 'Syncing Highlights...' : 'Sync Now'}
+                                    {isSyncing ? 'Syncing Highlights...' : 'Sync Now'}
                                 </button>
                             </div>
                         )}
-                        <button onClick={handleSkip} className="block mx-auto text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]">Skip</button>
+                        <button onClick={handleSkip} disabled={isSkipping || isSyncing} className="block mx-auto text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:opacity-50">
+                            {isSkipping ? 'Finishing Up...' : 'Skip'}
+                        </button>
                     </div>
                 )}
             </div>

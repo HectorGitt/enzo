@@ -234,8 +234,8 @@ export async function saveProfileToDB(profile: UserProfile): Promise<boolean> {
 		// First time insert
 		const res = await db.query(
 			`
-            INSERT INTO "UserProfile" (name, username, email, phone, location, bio, title, "portfolioRepo", "connectedProviders", "lastSyncLog", "resumeConfig", "bioVariations", "socials", "waitlist", "contentGenerationUsed", "updatedAt")
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, NOW()) 
+            INSERT INTO "UserProfile" (name, username, email, phone, location, bio, title, "portfolioRepo", "connectedProviders", "lastSyncLog", "resumeConfig", "bioVariations", "socials", "waitlist", "contentGenerationUsed", "onboardingCompleted", "updatedAt")
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, NOW()) 
             RETURNING id`,
 			[
 				profile.name,
@@ -253,6 +253,7 @@ export async function saveProfileToDB(profile: UserProfile): Promise<boolean> {
 				socials,
 				waitlist,
 				profile.contentGenerationUsed || 0,
+				profile.onboardingCompleted || false,
 			]
 		);
 		userId = res.rows[0].id;
@@ -264,7 +265,7 @@ export async function saveProfileToDB(profile: UserProfile): Promise<boolean> {
             name = $2, username = $3, phone = $4, location = $5, bio = $6, title = $7,
             "portfolioRepo" = $8, "connectedProviders" = $9, "lastSyncLog" = $10,
             "resumeConfig" = $11, "bioVariations" = $12, "socials" = $13, "waitlist" = $14,
-            "contentGenerationUsed" = $15,
+            "contentGenerationUsed" = $15, "onboardingCompleted" = $16,
             "updatedAt" = NOW()
             WHERE id = $1`,
 			[
@@ -283,6 +284,7 @@ export async function saveProfileToDB(profile: UserProfile): Promise<boolean> {
 				socials,
 				waitlist,
 				profile.contentGenerationUsed || 0,
+				profile.onboardingCompleted || false,
 			]
 		);
 	}
