@@ -118,7 +118,7 @@ export async function getOrCreateProfile(
 
 	const res = await db.query(
 		`INSERT INTO "UserProfile" (name, email, username, bio, title, credits, tier, "updatedAt")
-		 VALUES ($1, $2, $3, '', 'Professional', 10000, 'free', NOW())
+		 VALUES ($1, $2, $3, '', 'Professional', 500000, 'free', NOW())
 		 RETURNING id`,
 		[name || "New User", email, username]
 	);
@@ -133,7 +133,7 @@ export async function getOrCreateProfile(
 		username,
 		bio: "",
 		title: "Professional",
-		credits: 10000,
+		credits: 500000,
 		tier: "free",
 		wins: [],
 		experience: [],
