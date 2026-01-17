@@ -209,7 +209,7 @@ export async function ingestGitHub(
 
 		// 4. Save to Profile
 		// Auto-create profile for new users
-		const currentProfile = await getOrCreateProfile(email, name);
+		const currentProfile = await getOrCreateProfile(email, name, username);
 
 		// Dedup against existing rawActivities
 		const existingIds = new Set(

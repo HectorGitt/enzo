@@ -108,19 +108,43 @@ export async function getProfileByEmail(
  */
 export async function getOrCreateProfile(
 	email: string,
-	name?: string
+	name?: string,
+	preferredUsername?: string
 ): Promise<UserProfile> {
 	let profile = await getProfileByEmail(email);
 	if (profile) return profile;
 
 	// Create a minimal profile for new users
-	const username = email.split("@")[0].replace(/[^a-zA-Z0-9]/g, "") + Math.floor(Math.random() * 1000);
+	// Use preferredUsername (e.g. from GitHub) or fallback to email part
+	const baseUsername = preferredUsername
+		? preferredUsername.replace(/[^a-zA-Z0-9]/g, "")
+		: email.split("@")[0].replace(/[^a-zA-Z0-9]/g, "");
+
+	let candidateUsername = baseUsername;
+	let isUnique = false;
+
+	// Simple collision check loop (max 5 tries to prevent infinite loops)
+	let attempts = 0;
+	while (!isUnique && attempts < 5) {
+		const existing = await getProfileByUsername(candidateUsername);
+		if (!existing) {
+			isUnique = true;
+		} else {
+			// Try again with larger range
+			candidateUsername = baseUsername + Math.floor(Math.random() * 10000);
+			attempts++;
+		}
+	}
+	// Fallback to timestamp if still colliding
+	if (!isUnique) {
+		candidateUsername = baseUsername + Date.now();
+	}
 
 	const res = await db.query(
 		`INSERT INTO "UserProfile" (name, email, username, bio, title, credits, tier, "updatedAt")
 		 VALUES ($1, $2, $3, '', 'Professional', 500000, 'free', NOW())
 		 RETURNING id`,
-		[name || "New User", email, username]
+		[name || "New User", email, candidateUsername]
 	);
 
 	const userId = res.rows[0].id;
@@ -130,7 +154,7 @@ export async function getOrCreateProfile(
 		id: userId,
 		email,
 		name: name || "New User",
-		username,
+		username: candidateUsername,
 		bio: "",
 		title: "Professional",
 		credits: 500000,
