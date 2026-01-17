@@ -22,7 +22,7 @@ export async function enhanceWinWithAI(
 	winId: string,
 	title: string,
 	rawContent: string,
-	source: string
+	source: string,
 ) {
 	const session = await auth();
 	// @ts-ignore
@@ -44,13 +44,13 @@ export async function enhanceWinWithAI(
 		const aiResult = await generateHighlightSummary(
 			title,
 			rawContent,
-			source
+			source,
 		);
 
 		// 2. Deduct actual tokens used as credits (1 token = 1 credit)
 		await deductCreditsAction(
 			aiResult.tokensUsed,
-			`AI enhance win: ${title.slice(0, 30)}`
+			`AI enhance win: ${title.slice(0, 30)}`,
 		);
 
 		// 3. Update DB
@@ -100,7 +100,7 @@ export async function generateRepoHighlights(
 	repoName: string,
 	activityContext: string,
 	tone: "professional" | "casual" | "enthusiastic",
-	count: number
+	count: number,
 ) {
 	const session = await auth();
 	// @ts-ignore
@@ -122,13 +122,13 @@ export async function generateRepoHighlights(
 			repoName,
 			activityContext,
 			tone,
-			count
+			count,
 		);
 
 		// Deduct actual tokens used
 		await deductCreditsAction(
 			result.tokensUsed,
-			`AI repo highlights: ${repoName}`
+			`AI repo highlights: ${repoName}`,
 		);
 
 		const profile = await getProfileByEmail(email);
@@ -167,7 +167,7 @@ export async function generateRepoHighlights(
 export async function generateBioOptions(
 	repoName: string,
 	activityContext: string,
-	tone: "professional" | "casual" | "enthusiastic"
+	tone: "professional" | "casual" | "enthusiastic",
 ) {
 	const session = await auth();
 	// @ts-ignore
@@ -203,7 +203,7 @@ export async function generateBioOptions(
 export async function generateCustomContentAction(
 	context: string,
 	type: GenerationType,
-	config: GenerationConfig
+	config: GenerationConfig,
 ) {
 	const session = await auth();
 	// @ts-ignore
@@ -237,7 +237,14 @@ export async function generateCustomContentAction(
 
 	try {
 		const result = await generateCustomContent(context, type, config);
+
+		// Increment content generation usage for free users
+		if (profile.tier === "free") {
+			await saveProfileToDB({
 				...profile,
+				contentGenerationUsed: (profile.contentGenerationUsed || 0) + 1,
+			});
+		}
 
 		// Deduct actual tokens used
 		await deductCreditsAction(result.tokensUsed, `AI content: ${type}`);
