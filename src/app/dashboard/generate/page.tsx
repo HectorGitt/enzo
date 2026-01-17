@@ -140,7 +140,7 @@ export default function GeneratePage() {
 		(estimatedInputTokens +
 			estimatedOutputTokens +
 			estimatedThinkingTokens) *
-			1.1
+		1.1
 	);
 
 	// Check if user has enough credits
@@ -225,8 +225,8 @@ export default function GeneratePage() {
 
 			<div className="flex flex-1 min-h-0 overflow-hidden">
 				{/* SETTINGS SIDEBAR */}
-				<div className="w-80 border-r border-black/5 bg-white flex flex-col shrink-0">
-					<div className="flex-1 p-6 flex flex-col gap-8">
+				<div className="w-80 border-r border-black/5 bg-white flex flex-col shrink-0 overflow-y-auto">
+					<div className="p-6 flex flex-col gap-8">
 						{/* 1. Context Selection */}
 						<section>
 							<h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
@@ -323,11 +323,10 @@ export default function GeneratePage() {
 								</div>
 								{userCredits !== null && (
 									<div
-										className={`mt-2 text-[10px] flex justify-between ${
-											hasEnoughCredits
-												? "text-green-600"
-												: "text-red-600"
-										}`}
+										className={`mt-2 text-[10px] flex justify-between ${hasEnoughCredits
+											? "text-green-600"
+											: "text-red-600"
+											}`}
 									>
 										<span>Your credits:</span>
 										<span className="font-medium">
@@ -379,11 +378,10 @@ export default function GeneratePage() {
 										key={type}
 										onClick={() => setGenType(type)}
 										className={`px-4 py-3 rounded-lg text-sm text-left font-medium transition-all border
-                                        ${
-											genType === type
+                                        ${genType === type
 												? "bg-purple-50 border-purple-200 text-purple-700 shadow-sm"
 												: "bg-white border-transparent hover:bg-gray-50 text-gray-600"
-										}
+											}
                                     `}
 									>
 										<span className="capitalize">
@@ -429,11 +427,10 @@ export default function GeneratePage() {
 													})
 												}
 												className={`text-xs py-1.5 px-2 rounded border capitalize transition-colors
-                                                ${
-													config.tone === t
+                                                ${config.tone === t
 														? "bg-black text-white border-black"
 														: "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
-												}
+													}
                                             `}
 											>
 												{t}
@@ -459,11 +456,10 @@ export default function GeneratePage() {
 													})
 												}
 												className={`flex-1 text-xs py-1 rounded-md capitalize transition-all
-                                                ${
-													config.length === l
+                                                ${config.length === l
 														? "bg-white shadow-sm text-black font-medium"
 														: "text-gray-500 hover:text-gray-700"
-												}
+													}
                                             `}
 											>
 												{l}
@@ -495,16 +491,15 @@ export default function GeneratePage() {
 						</section>
 					</div>
 
-					<div className="p-6 pt-0 border-t border-black/5 bg-white">
+					<div className="p-6 pt-0 bg-white">
 						<button
 							onClick={handleGenerate}
 							disabled={generating || !hasEnoughCredits}
 							className={`w-full py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2
-                            ${
-								!hasEnoughCredits
+                            ${!hasEnoughCredits
 									? "bg-gray-300 text-gray-500 cursor-not-allowed"
 									: "bg-[#6E2CF4] text-white hover:bg-[#5b24cc] shadow-lg shadow-purple-200 disabled:opacity-50 disabled:cursor-not-allowed"
-							}
+								}
                         `}
 						>
 							{generating ? (
@@ -515,8 +510,8 @@ export default function GeneratePage() {
 							{generating
 								? "Cultivating..."
 								: !hasEnoughCredits
-								? "Insufficient Credits"
-								: "Generate Content"}
+									? "Insufficient Credits"
+									: "Generate Content"}
 						</button>
 					</div>
 				</div>
@@ -536,21 +531,19 @@ export default function GeneratePage() {
 											onClick={() =>
 												setViewMode("preview")
 											}
-											className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
-												viewMode === "preview"
-													? "bg-white text-black shadow-sm"
-													: "text-gray-500 hover:text-gray-700"
-											}`}
+											className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${viewMode === "preview"
+												? "bg-white text-black shadow-sm"
+												: "text-gray-500 hover:text-gray-700"
+												}`}
 										>
 											Preview
 										</button>
 										<button
 											onClick={() => setViewMode("raw")}
-											className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
-												viewMode === "raw"
-													? "bg-white text-black shadow-sm"
-													: "text-gray-500 hover:text-gray-700"
-											}`}
+											className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${viewMode === "raw"
+												? "bg-white text-black shadow-sm"
+												: "text-gray-500 hover:text-gray-700"
+												}`}
 										>
 											Raw
 										</button>
@@ -648,10 +641,9 @@ export default function GeneratePage() {
 									<button
 										onClick={handleCopy}
 										className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition-colors
-                                            ${
-												copied
-													? "bg-green-100 text-green-700"
-													: "bg-black text-white hover:bg-gray-800"
+                                            ${copied
+												? "bg-green-100 text-green-700"
+												: "bg-black text-white hover:bg-gray-800"
 											}
                                         `}
 									>
@@ -742,9 +734,8 @@ function SaveMenu({
 				Save as...
 				<ChevronDown
 					size={12}
-					className={`transition-transform ${
-						open ? "rotate-180" : ""
-					}`}
+					className={`transition-transform ${open ? "rotate-180" : ""
+						}`}
 				/>
 			</button>
 
