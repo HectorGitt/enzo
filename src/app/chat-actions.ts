@@ -131,11 +131,23 @@ export async function chatWithDataAction(
         ],
     });
 
+    // Ensure history starts with user role. Gemini requires User -> Model -> User.
+    // If the history starts with a Model greeting, we prepend a placeholder User message
+    // so the Model message is preserved in context (User: "Hi" -> Model: "Greeting").
+
+    const validHistory = history.filter(h => h.parts && h.parts.trim() !== "");
+
+    if (validHistory.length > 0 && validHistory[0].role === "model") {
+        validHistory.unshift({
+            role: "user",
+            parts: "Start chat session"
+        });
+    }
+
     // 4. Start Chat Session
     const chat = model.startChat({
-        // @ts-ignore
-        history: history.map(h => ({
-            role: h.role,
+        history: validHistory.map(h => ({
+            role: h.role as "user" | "model",
             parts: [{ text: h.parts }]
         })),
         systemInstruction: {
