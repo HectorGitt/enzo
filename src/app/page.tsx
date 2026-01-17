@@ -1,4 +1,21 @@
+"use client";
+
 import Link from "next/link";
+import {
+	Bot,
+	Github,
+	FileText,
+	Sparkles,
+	Globe,
+	LayoutTemplate,
+	ArrowRight,
+	CheckCircle2,
+	Terminal,
+	Database,
+	ShieldCheck,
+	Cpu
+} from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function Home() {
 	const jsonLd = {
@@ -8,7 +25,7 @@ export default function Home() {
 		applicationCategory: "BusinessApplication",
 		operatingSystem: "Web",
 		description:
-			"Enzo automatically syncs your GitHub commits and PRs into a living resume. Generate PDFs, build your public portfolio, and never scramble before a performance review again.",
+			"Enzo automatically syncs your GitHub commits and PRs into a living resume. Generate PDFs, build your public portfolio, and chat with your career history using AI.",
 		offers: {
 			"@type": "Offer",
 			price: "0",
@@ -19,6 +36,23 @@ export default function Home() {
 			ratingValue: "5",
 			ratingCount: "100",
 		},
+	};
+
+	const fadeInUp = {
+		initial: { opacity: 0, y: 20 },
+		whileInView: { opacity: 1, y: 0 },
+		viewport: { once: true },
+		transition: { duration: 0.5 }
+	};
+
+	const staggerContainer = {
+		hidden: { opacity: 0 },
+		show: {
+			opacity: 1,
+			transition: {
+				staggerChildren: 0.1
+			}
+		}
 	};
 
 	return (
@@ -48,272 +82,314 @@ export default function Home() {
 							<img src="/enzo.png" alt="Enzo" className="w-8 h-8 rounded-lg" />
 							<span>Enzo</span>
 						</Link>
-						<div className="flex gap-4 text-sm font-medium text-[var(--text-secondary)]">
-							<a
-								href="#features"
-								className="hover:text-[var(--text-primary)] transition-colors"
-							>
-								Features
-							</a>
-							<a
-								href="#how-it-works"
-								className="hover:text-[var(--text-primary)] transition-colors"
-							>
-								How it works
-							</a>
+						<div className="hidden md:flex gap-6 text-sm font-medium text-[var(--text-secondary)]">
+							<a href="#copilot" className="hover:text-[var(--text-primary)] transition-colors">AI Copilot</a>
+							<a href="#features" className="hover:text-[var(--text-primary)] transition-colors">Features</a>
+							<a href="#portfolio" className="hover:text-[var(--text-primary)] transition-colors">Portfolio</a>
 						</div>
-						<Link
-							href="/login"
-							className="px-5 py-2 rounded-full bg-black/5 text-[var(--text-primary)] text-sm font-bold hover:bg-black/10 transition-colors"
-						>
-							Login
-						</Link>
+						<div className="flex items-center gap-4">
+							<Link
+								href="/login"
+								className="px-5 py-2 rounded-full bg-black/5 text-[var(--text-primary)] text-sm font-bold hover:bg-black/10 transition-colors"
+							>
+								Login
+							</Link>
+							<Link
+								href="/dashboard"
+								className="hidden md:inline-flex px-5 py-2 rounded-full bg-[var(--accent-cyan)] text-white text-sm font-bold hover:brightness-110 transition-colors"
+							>
+								Get Started
+							</Link>
+						</div>
 					</nav>
 				</header>
 
 				<main className="z-10 flex-grow">
 					{/* HERO SECTION */}
-					<section className="pt-32 pb-20 text-center px-6">
-						<div className="mb-6 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[var(--accent-cyan)]/20 bg-[var(--accent-cyan)]/5 backdrop-blur-md text-sm text-[var(--accent-cyan)]">
-							<span className="relative flex h-2 w-2">
-								<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--accent-cyan)] opacity-75"></span>
-								<span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--accent-cyan)]"></span>
+					<section className="pt-32 pb-24 text-center px-6 relative">
+						<motion.div
+							initial={{ opacity: 0, y: -20 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ duration: 0.5 }}
+							className="mb-8 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[var(--accent-cyan)]/20 bg-[var(--accent-cyan)]/5 backdrop-blur-md text-sm text-[var(--accent-cyan)]"
+						>
+							<Bot className="w-4 h-4" />
+							<span>Introducing AI Career Copilot</span>
+						</motion.div>
+
+						<motion.h1
+							initial={{ opacity: 0, scale: 0.95 }}
+							animate={{ opacity: 1, scale: 1 }}
+							transition={{ duration: 0.6, delay: 0.1 }}
+							className="text-6xl md:text-8xl font-bold tracking-tighter mb-8 text-[var(--text-primary)]"
+						>
+							Your Career, <br />
+							<span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent-cyan)] to-[var(--accent-blue)]">
+								On Autopilot.
 							</span>
-							Enzo is now in Open Beta
-						</div>
+						</motion.h1>
 
-						<h1 className="text-6xl md:text-8xl font-bold tracking-tighter mb-8 text-[var(--text-primary)]">
-							End Career <br />{" "}
-							<span className="text-[var(--accent-cyan)]">
-								Amnesia.
-							</span>
-						</h1>
+						<motion.p
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+							transition={{ duration: 0.6, delay: 0.2 }}
+							className="text-xl text-[var(--text-secondary)] max-w-2xl mx-auto mb-12 leading-relaxed font-light"
+						>
+							Enzo listens to your code commits, remembers your achievements,
+							and uses AI to build your resume, portfolio, and performance reviews automatically.
+						</motion.p>
 
-						<p className="text-xl text-[var(--text-secondary)] max-w-2xl mx-auto mb-10 leading-relaxed font-light">
-							Your work doesn't disappear when you close your
-							laptop. <br />
-							Enzo syncs your code commits and wins directly to a
-							live resume.
-						</p>
-
-						<div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+						<motion.div
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ duration: 0.5, delay: 0.3 }}
+							className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+						>
 							<Link
 								href="/dashboard"
-								className="btn-primary min-w-[160px] text-center"
+								className="btn-primary min-w-[200px] h-12 flex items-center justify-center gap-2 text-lg shadow-lg shadow-[var(--accent-cyan)]/20 hover:shadow-[var(--accent-cyan)]/40 hover:scale-105 transition-all"
 							>
-								Start Syncing
+								Start Syncing <ArrowRight className="w-5 h-5" />
 							</Link>
-							<a
-								href="#how-it-works"
-								className="px-6 py-3 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-medium transition-colors"
+							<Link
+								href="/dashboard/chat"
+								className="px-6 h-12 rounded-lg border border-black/10 bg-white hover:bg-gray-50 text-[var(--text-primary)] font-medium transition-all hover:scale-105 flex items-center justify-center gap-2"
 							>
-								How it works →
-							</a>
-						</div>
+								<Bot className="w-5 h-5 text-[var(--accent-purple)]" />
+								Chat with Demo
+							</Link>
+						</motion.div>
 					</section>
 
-					{/* PROBLEM SECTION */}
-					<section className="py-24 border-y border-black/5 bg-black/5">
+					{/* FEATURE 1: AI CAREER COPILOT (Highlight) */}
+					<section id="copilot" className="py-24 bg-gradient-to-b from-transparent to-black/5">
 						<div className="container mx-auto px-6">
-							<div className="grid md:grid-cols-2 gap-16 items-center">
-								<div>
-									<h2 className="text-3xl md:text-4xl font-bold mb-6">
-										You do great work.
-										<br />
-										Then you forget it.
-									</h2>
-									<p className="text-[var(--text-secondary)] mb-6 text-lg leading-relaxed">
-										Every day you solve complex problems,
-										fix critical bugs, and optimize systems.
-										But when performance review time comes,
-										you're scrolling through Slack trying to
-										remember what you did last month.
+							<motion.div
+								{...fadeInUp}
+								className="bg-white rounded-3xl border border-black/5 shadow-2xl overflow-hidden flex flex-col md:flex-row"
+							>
+								<div className="p-12 md:w-1/2 flex flex-col justify-center">
+									<div className="w-12 h-12 rounded-xl bg-[var(--accent-purple)]/10 text-[var(--accent-purple)] flex items-center justify-center mb-6">
+										<Bot className="w-6 h-6" />
+									</div>
+									<h2 className="text-4xl font-bold mb-6">AI Career Copilot</h2>
+									<p className="text-lg text-[var(--text-secondary)] mb-8 leading-relaxed">
+										Forget what you did last month? Just ask Enzo.
+										Our Agentic RAG system searches your commits, PRs, and wins to answer complex career questions.
 									</p>
-									<p className="text-lg text-[var(--text-primary)] font-medium">
-										That's Career Amnesia. And it's costing
-										you promotions.
-									</p>
+									<ul className="space-y-4">
+										{[
+											'"What did I work on in December?"',
+											'"Summarize my React contributions"',
+											'"Rewrite my bio for a Senior role"'
+										].map((q, i) => (
+											<motion.li
+												key={i}
+												initial={{ opacity: 0, x: -20 }}
+												whileInView={{ opacity: 1, x: 0 }}
+												viewport={{ once: true }}
+												transition={{ delay: 0.2 + (i * 0.1) }}
+												className="flex items-center gap-3 text-[var(--text-primary)] bg-gray-50 p-3 rounded-lg border border-black/5"
+											>
+												<span className="text-[var(--accent-purple)] font-bold">Q:</span>
+												{q}
+											</motion.li>
+										))}
+									</ul>
 								</div>
-								<div className="relative">
-									<div className="glass-panel p-8 border border-black/5 opacity-70 scale-95 transform translate-y-4">
-										<div className="h-4 w-3/4 bg-black/5 rounded mb-4" />
-										<div className="h-4 w-1/2 bg-black/5 rounded mb-8" />
-										<div className="h-24 w-full bg-black/5 rounded dashed border-2 border-black/10 flex items-center justify-center text-[var(--text-muted)]">
-											Forgotten Achievements
+								<div className="md:w-1/2 bg-gray-50 border-l border-black/5 p-8 flex items-center justify-center">
+									{/* Mock Chat UI */}
+									<div className="w-full max-w-md bg-white rounded-xl shadow-lg border border-black/5 overflow-hidden transform transition-all hover:scale-105 duration-500">
+										<div className="bg-[var(--accent-cyan)] p-4 text-white font-medium flex gap-2 items-center">
+											<Bot className="w-5 h-5" /> Enzo Copilot
+										</div>
+										<div className="p-4 space-y-4">
+											<div className="flex justify-end">
+												<div className="bg-[var(--accent-cyan)] text-white p-3 rounded-2xl rounded-tr-sm text-sm">
+													What tickets did I close last week?
+												</div>
+											</div>
+											<div className="flex justify-start">
+												<div className="bg-gray-100 p-3 rounded-2xl rounded-tl-sm text-sm text-gray-800">
+													You closed 4 tickets in the <b>dashboard</b> repo:
+													<ul className="list-disc pl-4 mt-2 space-y-1">
+														<li>Fixed auth race condition</li>
+														<li>Added dark mode toggle</li>
+													</ul>
+												</div>
+											</div>
+										</div>
+										<div className="p-3 border-t bg-gray-50">
+											<div className="h-10 bg-white border rounded-lg w-full flex items-center px-4 text-gray-400 text-sm">Type a message...</div>
 										</div>
 									</div>
-									<div className="glass-panel p-8 border border-[var(--accent-cyan)]/30 absolute top-[-20px] -left-4 shadow-[0_4px_20px_rgba(0,0,0,0.1)]">
-										<div className="flex items-center gap-4 mb-4">
-											<div className="w-10 h-10 rounded-full bg-[var(--accent-cyan)]/20 flex items-center justify-center text-[var(--accent-cyan)]">
-												✓
-											</div>
-											<div className="font-bold">
-												Optimized API Latency by 40%
-											</div>
-										</div>
-										<div className="flex items-center gap-4">
-											<div className="w-10 h-10 rounded-full bg-[var(--accent-purple)]/20 flex items-center justify-center text-[var(--accent-purple)]">
-												✓
-											</div>
-											<div className="font-bold">
-												Shipped Dark Mode UI
-											</div>
-										</div>
-									</div>
 								</div>
-							</div>
+							</motion.div>
 						</div>
 					</section>
 
-					{/* HOW IT WORKS */}
-					<section id="how-it-works" className="py-24">
+					{/* FEATURE GRID */}
+					<section id="features" className="py-24">
+						<div className="container mx-auto px-6">
+							<motion.div {...fadeInUp} className="text-center mb-16">
+								<h2 className="text-4xl font-bold mb-4">Everything you need to prove your worth.</h2>
+								<p className="text-[var(--text-secondary)] text-lg">Enzo connects the dots between your code and your career.</p>
+							</motion.div>
+
+							<motion.div
+								variants={staggerContainer}
+								initial="hidden"
+								whileInView="show"
+								viewport={{ once: true }}
+								className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
+							>
+								{/* Feature 2: Smart Ingestion */}
+								<motion.div variants={fadeInUp} className="p-8 rounded-2xl bg-white border border-black/5 shadow-sm hover:shadow-xl transition-all hover:border-[var(--accent-cyan)]/30 group">
+									<div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+										<Github className="w-6 h-6" />
+									</div>
+									<h3 className="text-xl font-bold mb-3">Smart Ingestion</h3>
+									<p className="text-[var(--text-secondary)]">
+										Enzo listens to GitHub events automatically. We filter out the noise (typo fixes) and keep the signal (performance wins).
+									</p>
+								</motion.div>
+
+								{/* Feature 3: Data Studio */}
+								<motion.div variants={fadeInUp} className="p-8 rounded-2xl bg-white border border-black/5 shadow-sm hover:shadow-xl transition-all hover:border-[var(--accent-purple)]/30 group">
+									<div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+										<Database className="w-6 h-6" />
+									</div>
+									<h3 className="text-xl font-bold mb-3">The Data Studio</h3>
+									<p className="text-[var(--text-secondary)]">
+										A Kanban board for your career. Drag and drop raw commits to turn them into executive-ready "Highlights".
+									</p>
+								</motion.div>
+
+								{/* Feature 4: Resume Builder */}
+								<motion.div variants={fadeInUp} className="p-8 rounded-2xl bg-white border border-black/5 shadow-sm hover:shadow-xl transition-all hover:border-pink-200 group">
+									<div className="w-12 h-12 rounded-xl bg-pink-50 text-pink-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+										<FileText className="w-6 h-6" />
+									</div>
+									<h3 className="text-xl font-bold mb-3">Resume Builder</h3>
+									<p className="text-[var(--text-secondary)]">
+										Generate pixel-perfect PDFs tailored to specific roles. Support for custom Word templates for ultimate control.
+									</p>
+								</motion.div>
+
+								{/* Feature 5: Content Gen */}
+								<motion.div variants={fadeInUp} className="p-8 rounded-2xl bg-white border border-black/5 shadow-sm hover:shadow-xl transition-all hover:border-orange-200 group">
+									<div className="w-12 h-12 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+										<Sparkles className="w-6 h-6" />
+									</div>
+									<h3 className="text-xl font-bold mb-3">Content Generator</h3>
+									<p className="text-[var(--text-secondary)]">
+										Need a bio for a conference? A cover letter? Enzo uses Gemini 2.5 Flash to write professional content in your tone.
+									</p>
+								</motion.div>
+
+								{/* Feature 6: Public Portfolio */}
+								<motion.div variants={fadeInUp} className="p-8 rounded-2xl bg-white border border-black/5 shadow-sm hover:shadow-xl transition-all hover:border-green-200 group">
+									<div className="w-12 h-12 rounded-xl bg-green-50 text-green-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+										<Globe className="w-6 h-6" />
+									</div>
+									<h3 className="text-xl font-bold mb-3">Public Portfolio</h3>
+									<p className="text-[var(--text-secondary)]">
+										Claim `enzo.dev/p/yourname`. A verified, always-updated portfolio that proves your skills with actual code evidence.
+									</p>
+								</motion.div>
+
+								{/* Security */}
+								<motion.div variants={fadeInUp} className="p-8 rounded-2xl bg-white border border-black/5 shadow-sm hover:shadow-xl transition-all hover:border-gray-200 group">
+									<div className="w-12 h-12 rounded-xl bg-gray-100 text-gray-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+										<ShieldCheck className="w-6 h-6" />
+									</div>
+									<h3 className="text-xl font-bold mb-3">Enterprise Secure</h3>
+									<p className="text-[var(--text-secondary)]">
+										Your code is safe. We use secure GitHub Apps, encrypted tokens, and never train public models on your private code.
+									</p>
+								</motion.div>
+							</motion.div>
+						</div>
+					</section>
+
+					{/* PUBLIC PORTFOLIO PREVIEW */}
+					<section id="portfolio" className="py-24 bg-black/[0.02]">
 						<div className="container mx-auto px-6 text-center">
-							<h2 className="text-3xl font-bold mb-16">
-								The Enzo Loop
-							</h2>
-							<div className="grid md:grid-cols-3 gap-8">
-								{/* Step 1 */}
-								<div className="relative group">
-									<div className="w-16 h-16 mx-auto bg-white border border-black/10 rounded-2xl flex items-center justify-center mb-6 group-hover:border-[var(--accent-cyan)] group-hover:shadow-[0_4px_20px_rgba(0,188,212,0.2)] transition-all">
-										<svg
-											className="w-8 h-8 text-[var(--accent-cyan)]"
-											fill="none"
-											stroke="currentColor"
-											viewBox="0 0 24 24"
-										>
-											<path
-												strokeLinecap="round"
-												strokeLinejoin="round"
-												strokeWidth="2"
-												d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
-											></path>
-										</svg>
+							<motion.h2
+								initial={{ opacity: 0, y: 20 }}
+								whileInView={{ opacity: 1, y: 0 }}
+								viewport={{ once: true }}
+								className="text-3xl font-bold mb-12"
+							>
+								Your Living Resume
+							</motion.h2>
+							<motion.div
+								initial={{ opacity: 0, scale: 0.9 }}
+								whileInView={{ opacity: 1, scale: 1 }}
+								viewport={{ once: true }}
+								transition={{ duration: 0.8 }}
+								className="relative max-w-4xl mx-auto rounded-2xl overflow-hidden shadow-2xl border border-black/10"
+							>
+								<div className="absolute top-0 w-full h-8 bg-gray-100 border-b flex items-center px-4 gap-2 z-10">
+									<div className="w-3 h-3 rounded-full bg-red-400"></div>
+									<div className="w-3 h-3 rounded-full bg-yellow-400"></div>
+									<div className="w-3 h-3 rounded-full bg-green-400"></div>
+									<div className="ml-4 bg-white px-3 py-0.5 rounded text-xs text-gray-500 flex-1 text-left">enzo.dev/p/ola</div>
+								</div>
+								<div className="pt-8 bg-white h-[500px] w-full relative">
+									<iframe
+										src="/p/ola"
+										className="w-full h-full border-none"
+										title="Live Portfolio Preview"
+										loading="lazy"
+									/>
+									{/* Overlay to prevent interaction stealing scroll but allow clicking through if desired, or keep button */}
+									<div className="absolute inset-0 bg-transparent" />
+								</div>
+								<div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+									<div className="pointer-events-auto">
+										<Link href="/dashboard" className="px-8 py-4 bg-black text-white rounded-full font-bold hover:scale-110 transition-transform shadow-xl">
+											Build Yours Now
+										</Link>
 									</div>
-									<h3 className="text-xl font-bold mb-2">
-										1. Ingest
-									</h3>
-									<p className="text-[var(--text-secondary)] text-sm px-4">
-										Enzo listens to your GitHub commits and
-										merged PRs automatically.
-									</p>
 								</div>
-
-								{/* Step 2 */}
-								<div className="relative group">
-									<div className="w-16 h-16 mx-auto bg-white border border-black/10 rounded-2xl flex items-center justify-center mb-6 group-hover:border-[var(--accent-purple)] group-hover:shadow-[0_4px_20px_rgba(156,39,176,0.2)] transition-all">
-										<svg
-											className="w-8 h-8 text-[var(--accent-purple)]"
-											fill="none"
-											stroke="currentColor"
-											viewBox="0 0 24 24"
-										>
-											<path
-												strokeLinecap="round"
-												strokeLinejoin="round"
-												strokeWidth="2"
-												d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-											></path>
-										</svg>
-									</div>
-									<h3 className="text-xl font-bold mb-2">
-										2. Analyze
-									</h3>
-									<p className="text-[var(--text-secondary)] text-sm px-4">
-										Our engine filters noise and formats
-										your work into impact-driven "Wins".
-									</p>
-								</div>
-
-								{/* Step 3 */}
-								<div className="relative group">
-									<div className="w-16 h-16 mx-auto bg-white border border-black/10 rounded-2xl flex items-center justify-center mb-6 group-hover:border-black/20 group-hover:shadow-[0_4px_20px_rgba(0,0,0,0.1)] transition-all">
-										<svg
-											className="w-8 h-8 text-black"
-											fill="none"
-											stroke="currentColor"
-											viewBox="0 0 24 24"
-										>
-											<path
-												strokeLinecap="round"
-												strokeLinejoin="round"
-												strokeWidth="2"
-												d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-											></path>
-										</svg>
-									</div>
-									<h3 className="text-xl font-bold mb-2">
-										3. Publish
-									</h3>
-									<p className="text-[var(--text-secondary)] text-sm px-4">
-										Generate a clean PDF resume or share
-										your always-updated public portfolio.
-									</p>
-								</div>
-							</div>
-						</div>
-					</section>
-
-					{/* FEATURES GRID */}
-					<section
-						id="features"
-						className="py-24 bg-gradient-to-b from-transparent to-black/5"
-					>
-						<div className="container mx-auto px-6 max-w-5xl">
-							<div className="grid md:grid-cols-2 gap-6">
-								<div className="glass-panel p-8 hover:border-[var(--accent-cyan)]/30 transition-colors">
-									<h3 className="text-2xl font-bold mb-4 text-[var(--accent-cyan)]">
-										GitHub Integration
-									</h3>
-									<p className="text-[var(--text-secondary)]">
-										Connect your repositories and let Enzo
-										fetch performance improvements, big
-										features, and bug fixes automatically.
-									</p>
-								</div>
-								<div className="glass-panel p-8 hover:border-[var(--accent-purple)]/30 transition-colors">
-									<h3 className="text-2xl font-bold mb-4 text-[var(--accent-purple)]">
-										PDF Resume Engine
-									</h3>
-									<p className="text-[var(--text-secondary)]">
-										Need a resume now? Generate a properly
-										formatted PDF with your latest wins in
-										one click.
-									</p>
-								</div>
-								<div className="glass-panel p-8 hover:border-black/20 transition-colors">
-									<h3 className="text-2xl font-bold mb-4">
-										Public Portfolio
-									</h3>
-									<p className="text-[var(--text-secondary)]">
-										Host your career history on
-										`enzo.dev/yourname`. A clutter-free,
-										professional page to share with
-										recruiters.
-									</p>
-								</div>
-								<div className="glass-panel p-8 hover:border-[var(--accent-cyan)]/30 transition-colors">
-									<h3 className="text-2xl font-bold mb-4 text-[var(--accent-cyan)]">
-										Automated PRs
-									</h3>
-									<p className="text-[var(--text-secondary)]">
-										Connect your portfolio repository and
-										Enzo will automatically submit Pull
-										Requests to update your site with new
-										wins.
-									</p>
-								</div>
-							</div>
+							</motion.div>
 						</div>
 					</section>
 
 					{/* FOOTER */}
-					<footer className="py-12 border-t border-black/5 text-center">
+					<footer className="py-16 border-t border-black/5 bg-white">
 						<div className="container mx-auto px-6">
-							<p className="text-[var(--text-secondary)] mb-4">
-								Built for developers who hate bragging.
-							</p>
-							<div className="text-sm text-[var(--text-muted)]">
-								© 2026 Project Enzo. All rights reserved.
+							<div className="grid md:grid-cols-4 gap-12 mb-12">
+								<div className="col-span-1 md:col-span-2">
+									<div className="flex items-center gap-2 font-bold text-xl mb-4">
+										<img src="/enzo.png" alt="Enzo" className="w-8 h-8 rounded-lg" />
+										Enzo
+									</div>
+									<p className="text-[var(--text-secondary)] max-w-sm">
+										The AI Career Copilot. Stop writing resumes manually.
+										Start syncing your achievements automatically.
+									</p>
+								</div>
+								<div>
+									<h4 className="font-bold mb-4">Product</h4>
+									<ul className="space-y-2 text-sm text-[var(--text-secondary)]">
+										<li><a href="#features" className="hover:text-black">Features</a></li>
+										<li><a href="#pricing" className="hover:text-black">Pricing</a></li>
+										<li><Link href="/dashboard/chat" className="hover:text-black">AI Chat</Link></li>
+										<li><Link href="/login" className="hover:text-black">Log In</Link></li>
+									</ul>
+								</div>
+								<div>
+									<h4 className="font-bold mb-4">Legal</h4>
+									<ul className="space-y-2 text-sm text-[var(--text-secondary)]">
+										<li><Link href="/privacy" className="hover:text-black">Privacy Policy</Link></li>
+										<li><Link href="/terms" className="hover:text-black">Terms of Service</Link></li>
+									</ul>
+								</div>
+							</div>
+							<div className="text-center pt-8 border-t border-black/5 text-sm text-[var(--text-muted)]">
+								© {new Date().getFullYear()} Project Enzo. Powered by <span className="font-mono text-xs bg-gray-100 px-1 py-0.5 rounded">Gemini 1.5 Flash</span>
 							</div>
 						</div>
 					</footer>
