@@ -13,7 +13,7 @@ import {
 	Terminal,
 	Database,
 	ShieldCheck,
-	Cpu
+	Cpu,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -42,7 +42,7 @@ export default function Home() {
 		initial: { opacity: 0, y: 20 },
 		whileInView: { opacity: 1, y: 0 },
 		viewport: { once: true },
-		transition: { duration: 0.5 }
+		transition: { duration: 0.5 },
 	};
 
 	const staggerContainer = {
@@ -50,9 +50,9 @@ export default function Home() {
 		show: {
 			opacity: 1,
 			transition: {
-				staggerChildren: 0.1
-			}
-		}
+				staggerChildren: 0.1,
+			},
+		},
 	};
 
 	return (
@@ -79,13 +79,32 @@ export default function Home() {
 							aria-label="Enzo Home"
 							className="text-xl font-bold tracking-tighter text-[var(--text-primary)] flex items-center gap-2"
 						>
-							<img src="/enzo.png" alt="Enzo" className="w-8 h-8 rounded-lg" />
+							<img
+								src="/enzo.png"
+								alt="Enzo"
+								className="w-8 h-8 rounded-lg"
+							/>
 							<span>Enzo</span>
 						</Link>
 						<div className="hidden md:flex gap-6 text-sm font-medium text-[var(--text-secondary)]">
-							<a href="#copilot" className="hover:text-[var(--text-primary)] transition-colors">AI Copilot</a>
-							<a href="#features" className="hover:text-[var(--text-primary)] transition-colors">Features</a>
-							<a href="#portfolio" className="hover:text-[var(--text-primary)] transition-colors">Portfolio</a>
+							<a
+								href="#copilot"
+								className="hover:text-[var(--text-primary)] transition-colors"
+							>
+								AI Copilot
+							</a>
+							<a
+								href="#features"
+								className="hover:text-[var(--text-primary)] transition-colors"
+							>
+								Features
+							</a>
+							<a
+								href="#portfolio"
+								className="hover:text-[var(--text-primary)] transition-colors"
+							>
+								Portfolio
+							</a>
 						</div>
 						<div className="flex items-center gap-4">
 							<Link
@@ -135,8 +154,9 @@ export default function Home() {
 							transition={{ duration: 0.6, delay: 0.2 }}
 							className="text-xl text-[var(--text-secondary)] max-w-2xl mx-auto mb-12 leading-relaxed font-light"
 						>
-							Enzo listens to your code commits, remembers your achievements,
-							and uses AI to build your resume, portfolio, and performance reviews automatically.
+							Enzo listens to your code commits, remembers your
+							achievements, and uses AI to build your resume,
+							portfolio, and performance reviews automatically.
 						</motion.p>
 
 						<motion.div
@@ -162,7 +182,10 @@ export default function Home() {
 					</section>
 
 					{/* FEATURE 1: AI CAREER COPILOT (Highlight) */}
-					<section id="copilot" className="py-24 bg-gradient-to-b from-transparent to-black/5">
+					<section
+						id="copilot"
+						className="py-24 bg-gradient-to-b from-transparent to-black/5"
+					>
 						<div className="container mx-auto px-6">
 							<motion.div
 								{...fadeInUp}
@@ -172,26 +195,37 @@ export default function Home() {
 									<div className="w-12 h-12 rounded-xl bg-[var(--accent-purple)]/10 text-[var(--accent-purple)] flex items-center justify-center mb-6">
 										<Bot className="w-6 h-6" />
 									</div>
-									<h2 className="text-4xl font-bold mb-6">AI Career Copilot</h2>
+									<h2 className="text-4xl font-bold mb-6">
+										AI Career Copilot
+									</h2>
 									<p className="text-lg text-[var(--text-secondary)] mb-8 leading-relaxed">
-										Forget what you did last month? Just ask Enzo.
-										Our Agentic RAG system searches your commits, PRs, and wins to answer complex career questions.
+										Forget what you did last month? Just ask
+										Enzo. Our Agentic RAG system searches
+										your commits, PRs, and wins to answer
+										complex career questions.
 									</p>
 									<ul className="space-y-4">
 										{[
 											'"What did I work on in December?"',
 											'"Summarize my React contributions"',
-											'"Rewrite my bio for a Senior role"'
+											'"Rewrite my bio for a Senior role"',
 										].map((q, i) => (
 											<motion.li
 												key={i}
 												initial={{ opacity: 0, x: -20 }}
-												whileInView={{ opacity: 1, x: 0 }}
+												whileInView={{
+													opacity: 1,
+													x: 0,
+												}}
 												viewport={{ once: true }}
-												transition={{ delay: 0.2 + (i * 0.1) }}
+												transition={{
+													delay: 0.2 + i * 0.1,
+												}}
 												className="flex items-center gap-3 text-[var(--text-primary)] bg-gray-50 p-3 rounded-lg border border-black/5"
 											>
-												<span className="text-[var(--accent-purple)] font-bold">Q:</span>
+												<span className="text-[var(--accent-purple)] font-bold">
+													Q:
+												</span>
 												{q}
 											</motion.li>
 										))}
@@ -201,26 +235,37 @@ export default function Home() {
 									{/* Mock Chat UI */}
 									<div className="w-full max-w-md bg-white rounded-xl shadow-lg border border-black/5 overflow-hidden transform transition-all hover:scale-105 duration-500">
 										<div className="bg-[var(--accent-cyan)] p-4 text-white font-medium flex gap-2 items-center">
-											<Bot className="w-5 h-5" /> Enzo Copilot
+											<Bot className="w-5 h-5" /> Enzo
+											Copilot
 										</div>
 										<div className="p-4 space-y-4">
 											<div className="flex justify-end">
 												<div className="bg-[var(--accent-cyan)] text-white p-3 rounded-2xl rounded-tr-sm text-sm">
-													What tickets did I close last week?
+													What tickets did I close
+													last week?
 												</div>
 											</div>
 											<div className="flex justify-start">
 												<div className="bg-gray-100 p-3 rounded-2xl rounded-tl-sm text-sm text-gray-800">
-													You closed 4 tickets in the <b>dashboard</b> repo:
+													You closed 4 tickets in the{" "}
+													<b>dashboard</b> repo:
 													<ul className="list-disc pl-4 mt-2 space-y-1">
-														<li>Fixed auth race condition</li>
-														<li>Added dark mode toggle</li>
+														<li>
+															Fixed auth race
+															condition
+														</li>
+														<li>
+															Added dark mode
+															toggle
+														</li>
 													</ul>
 												</div>
 											</div>
 										</div>
 										<div className="p-3 border-t bg-gray-50">
-											<div className="h-10 bg-white border rounded-lg w-full flex items-center px-4 text-gray-400 text-sm">Type a message...</div>
+											<div className="h-10 bg-white border rounded-lg w-full flex items-center px-4 text-gray-400 text-sm">
+												Type a message...
+											</div>
 										</div>
 									</div>
 								</div>
@@ -231,9 +276,17 @@ export default function Home() {
 					{/* FEATURE GRID */}
 					<section id="features" className="py-24">
 						<div className="container mx-auto px-6">
-							<motion.div {...fadeInUp} className="text-center mb-16">
-								<h2 className="text-4xl font-bold mb-4">Everything you need to prove your worth.</h2>
-								<p className="text-[var(--text-secondary)] text-lg">Enzo connects the dots between your code and your career.</p>
+							<motion.div
+								{...fadeInUp}
+								className="text-center mb-16"
+							>
+								<h2 className="text-4xl font-bold mb-4">
+									Everything you need to prove your worth.
+								</h2>
+								<p className="text-[var(--text-secondary)] text-lg">
+									Enzo connects the dots between your code and
+									your career.
+								</p>
 							</motion.div>
 
 							<motion.div
@@ -244,68 +297,112 @@ export default function Home() {
 								className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
 							>
 								{/* Feature 2: Smart Ingestion */}
-								<motion.div variants={fadeInUp} className="p-8 rounded-2xl bg-white border border-black/5 shadow-sm hover:shadow-xl transition-all hover:border-[var(--accent-cyan)]/30 group">
+								<motion.div
+									variants={fadeInUp}
+									className="p-8 rounded-2xl bg-white border border-black/5 shadow-sm hover:shadow-xl transition-all hover:border-[var(--accent-cyan)]/30 group"
+								>
 									<div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
 										<Github className="w-6 h-6" />
 									</div>
-									<h3 className="text-xl font-bold mb-3">Smart Ingestion</h3>
+									<h3 className="text-xl font-bold mb-3">
+										Smart Ingestion
+									</h3>
 									<p className="text-[var(--text-secondary)]">
-										Enzo listens to GitHub events automatically. We filter out the noise (typo fixes) and keep the signal (performance wins).
+										Enzo listens to GitHub events
+										automatically. We filter out the noise
+										(typo fixes) and keep the signal
+										(performance wins).
 									</p>
 								</motion.div>
 
 								{/* Feature 3: Data Studio */}
-								<motion.div variants={fadeInUp} className="p-8 rounded-2xl bg-white border border-black/5 shadow-sm hover:shadow-xl transition-all hover:border-[var(--accent-purple)]/30 group">
+								<motion.div
+									variants={fadeInUp}
+									className="p-8 rounded-2xl bg-white border border-black/5 shadow-sm hover:shadow-xl transition-all hover:border-[var(--accent-purple)]/30 group"
+								>
 									<div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
 										<Database className="w-6 h-6" />
 									</div>
-									<h3 className="text-xl font-bold mb-3">The Data Studio</h3>
+									<h3 className="text-xl font-bold mb-3">
+										The Data Studio
+									</h3>
 									<p className="text-[var(--text-secondary)]">
-										A Kanban board for your career. Drag and drop raw commits to turn them into executive-ready "Highlights".
+										A Kanban board for your career. Drag and
+										drop raw commits to turn them into
+										executive-ready "Highlights".
 									</p>
 								</motion.div>
 
 								{/* Feature 4: Resume Builder */}
-								<motion.div variants={fadeInUp} className="p-8 rounded-2xl bg-white border border-black/5 shadow-sm hover:shadow-xl transition-all hover:border-pink-200 group">
+								<motion.div
+									variants={fadeInUp}
+									className="p-8 rounded-2xl bg-white border border-black/5 shadow-sm hover:shadow-xl transition-all hover:border-pink-200 group"
+								>
 									<div className="w-12 h-12 rounded-xl bg-pink-50 text-pink-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
 										<FileText className="w-6 h-6" />
 									</div>
-									<h3 className="text-xl font-bold mb-3">Resume Builder</h3>
+									<h3 className="text-xl font-bold mb-3">
+										Resume Builder
+									</h3>
 									<p className="text-[var(--text-secondary)]">
-										Generate pixel-perfect PDFs tailored to specific roles. Support for custom Word templates for ultimate control.
+										Generate pixel-perfect PDFs tailored to
+										specific roles. Support for custom Word
+										templates for ultimate control.
 									</p>
 								</motion.div>
 
 								{/* Feature 5: Content Gen */}
-								<motion.div variants={fadeInUp} className="p-8 rounded-2xl bg-white border border-black/5 shadow-sm hover:shadow-xl transition-all hover:border-orange-200 group">
+								<motion.div
+									variants={fadeInUp}
+									className="p-8 rounded-2xl bg-white border border-black/5 shadow-sm hover:shadow-xl transition-all hover:border-orange-200 group"
+								>
 									<div className="w-12 h-12 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
 										<Sparkles className="w-6 h-6" />
 									</div>
-									<h3 className="text-xl font-bold mb-3">Content Generator</h3>
+									<h3 className="text-xl font-bold mb-3">
+										Content Generator
+									</h3>
 									<p className="text-[var(--text-secondary)]">
-										Need a bio for a conference? A cover letter? Enzo uses Gemini 2.5 Flash to write professional content in your tone.
+										Need a bio for a conference? A cover
+										letter? Enzo uses Gemini 2.5 Flash to
+										write professional content in your tone.
 									</p>
 								</motion.div>
 
 								{/* Feature 6: Public Portfolio */}
-								<motion.div variants={fadeInUp} className="p-8 rounded-2xl bg-white border border-black/5 shadow-sm hover:shadow-xl transition-all hover:border-green-200 group">
+								<motion.div
+									variants={fadeInUp}
+									className="p-8 rounded-2xl bg-white border border-black/5 shadow-sm hover:shadow-xl transition-all hover:border-green-200 group"
+								>
 									<div className="w-12 h-12 rounded-xl bg-green-50 text-green-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
 										<Globe className="w-6 h-6" />
 									</div>
-									<h3 className="text-xl font-bold mb-3">Public Portfolio</h3>
+									<h3 className="text-xl font-bold mb-3">
+										Public Portfolio
+									</h3>
 									<p className="text-[var(--text-secondary)]">
-										Claim `enzo.stability.com/p/yourname`. A verified, always-updated portfolio that proves your skills with actual code evidence.
+										Claim `enzo.stabilty.com/p/yourname`. A
+										verified, always-updated portfolio that
+										proves your skills with actual code
+										evidence.
 									</p>
 								</motion.div>
 
 								{/* Security */}
-								<motion.div variants={fadeInUp} className="p-8 rounded-2xl bg-white border border-black/5 shadow-sm hover:shadow-xl transition-all hover:border-gray-200 group">
+								<motion.div
+									variants={fadeInUp}
+									className="p-8 rounded-2xl bg-white border border-black/5 shadow-sm hover:shadow-xl transition-all hover:border-gray-200 group"
+								>
 									<div className="w-12 h-12 rounded-xl bg-gray-100 text-gray-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
 										<ShieldCheck className="w-6 h-6" />
 									</div>
-									<h3 className="text-xl font-bold mb-3">Enterprise Secure</h3>
+									<h3 className="text-xl font-bold mb-3">
+										Enterprise Secure
+									</h3>
 									<p className="text-[var(--text-secondary)]">
-										Your code is safe. We use secure GitHub Apps, encrypted tokens, and never train public models on your private code.
+										Your code is safe. We use secure GitHub
+										Apps, encrypted tokens, and never train
+										public models on your private code.
 									</p>
 								</motion.div>
 							</motion.div>
@@ -321,20 +418,34 @@ export default function Home() {
 										<Terminal className="w-4 h-4" />
 										<span>Developer Experience</span>
 									</div>
-									<h2 className="text-4xl font-bold mb-6">Zero-Touch Ingestion.</h2>
+									<h2 className="text-4xl font-bold mb-6">
+										Zero-Touch Ingestion.
+									</h2>
 									<p className="text-lg text-gray-400 mb-8 leading-relaxed">
-										You don't need to manually update a database. Enzo connects to your GitHub and runs in the background.
-										It parses your commit history, filters the noise, and pushes updates to your portfolio automatically.
+										You don't need to manually update a
+										database. Enzo connects to your GitHub
+										and runs in the background. It parses
+										your commit history, filters the noise,
+										and pushes updates to your portfolio
+										automatically.
 									</p>
 									<div className="flex gap-4">
 										<div className="flex flex-col">
-											<span className="text-3xl font-bold text-[var(--accent-cyan)]">100%</span>
-											<span className="text-sm text-gray-500">Automated</span>
+											<span className="text-3xl font-bold text-[var(--accent-cyan)]">
+												100%
+											</span>
+											<span className="text-sm text-gray-500">
+												Automated
+											</span>
 										</div>
 										<div className="w-px bg-gray-800"></div>
 										<div className="flex flex-col">
-											<span className="text-3xl font-bold text-[var(--accent-purple)]">24/7</span>
-											<span className="text-sm text-gray-500">Monitoring</span>
+											<span className="text-3xl font-bold text-[var(--accent-purple)]">
+												24/7
+											</span>
+											<span className="text-sm text-gray-500">
+												Monitoring
+											</span>
 										</div>
 									</div>
 								</div>
@@ -352,35 +463,89 @@ export default function Home() {
 												<div className="w-3 h-3 rounded-full bg-yellow-500/20"></div>
 												<div className="w-3 h-3 rounded-full bg-green-500/20"></div>
 											</div>
-											<div className="ml-auto text-xs text-gray-600">enzo-sync-worker — 80x24</div>
+											<div className="ml-auto text-xs text-gray-600">
+												enzo-sync-worker — 80x24
+											</div>
 										</div>
 										<div className="p-6 space-y-2">
 											<div className="text-gray-300">
-												<span className="text-green-500">➜</span> <span className="text-cyan-400">~</span> enzo listen --webhook=github
+												<span className="text-green-500">
+													➜
+												</span>{" "}
+												<span className="text-cyan-400">
+													~
+												</span>{" "}
+												enzo listen --webhook=github
 											</div>
 											<div className="text-gray-500">
-												[+] Webhook received: push event (3 commits)<br />
-												[+] Authenticating... <span className="text-green-500">OK</span><br />
-												<span className="pl-4">- facebook/react: 3 new commits</span><br />
-												<span className="pl-4">- vercel/next.js: 1 merged PR</span>
+												[+] Webhook received: push event
+												(3 commits)
+												<br />
+												[+] Authenticating...{" "}
+												<span className="text-green-500">
+													OK
+												</span>
+												<br />
+												<span className="pl-4">
+													- facebook/react: 3 new
+													commits
+												</span>
+												<br />
+												<span className="pl-4">
+													- vercel/next.js: 1 merged
+													PR
+												</span>
 											</div>
 											<div className="text-gray-300 mt-4">
-												<span className="text-green-500">➜</span> <span className="text-cyan-400">~</span> enzo process --ai=gemini-2.5-flash
+												<span className="text-green-500">
+													➜
+												</span>{" "}
+												<span className="text-cyan-400">
+													~
+												</span>{" "}
+												enzo process
+												--ai=gemini-2.5-flash
 											</div>
 											<div className="text-gray-500 mt-2">
-												[+] Analyzed impact:<br />
-												<span className="pl-4 text-gray-600">- Ignored: "fix typo" (Noise)</span><br />
-												<span className="pl-4 text-blue-400">- Processed: "Optimized hydration logic" (Impact: High)</span>
+												[+] Analyzed impact:
+												<br />
+												<span className="pl-4 text-gray-600">
+													- Ignored: "fix typo"
+													(Noise)
+												</span>
+												<br />
+												<span className="pl-4 text-blue-400">
+													- Processed: "Optimized
+													hydration logic" (Impact:
+													High)
+												</span>
 											</div>
 											<div className="text-gray-300 mt-4">
-												<span className="text-green-500">➜</span> <span className="text-cyan-400">~</span> enzo deploy --target=enzo.stability.com
+												<span className="text-green-500">
+													➜
+												</span>{" "}
+												<span className="text-cyan-400">
+													~
+												</span>{" "}
+												enzo deploy
+												--target=enzo.stability.com
 											</div>
 											<div className="text-gray-500 mt-2">
-												[+] Updating live resume... <span className="text-green-500">OK</span><br />
+												[+] Updating live resume...{" "}
+												<span className="text-green-500">
+													OK
+												</span>
+												<br />
 												[✓] New achievements live.
 											</div>
 											<div className="mt-4 flex items-center gap-2">
-												<span className="text-green-500">➜</span> <span className="text-cyan-400">~</span> <span className="w-2 h-4 bg-gray-500 animate-pulse inline-block align-middle"></span>
+												<span className="text-green-500">
+													➜
+												</span>{" "}
+												<span className="text-cyan-400">
+													~
+												</span>{" "}
+												<span className="w-2 h-4 bg-gray-500 animate-pulse inline-block align-middle"></span>
 											</div>
 										</div>
 									</div>
@@ -414,13 +579,25 @@ export default function Home() {
 											JD
 										</div>
 										<div>
-											<h3 className="text-3xl font-bold text-gray-900">Jane Developer</h3>
-											<p className="text-lg text-[var(--accent-purple)] font-medium mb-4">Senior Software Engineer</p>
+											<h3 className="text-3xl font-bold text-gray-900">
+												Jane Developer
+											</h3>
+											<p className="text-lg text-[var(--accent-purple)] font-medium mb-4">
+												Senior Software Engineer
+											</p>
 											<div className="flex flex-wrap gap-2">
-												<span className="px-3 py-1 rounded-full bg-gray-100 text-sm text-gray-600">TypeScript</span>
-												<span className="px-3 py-1 rounded-full bg-gray-100 text-sm text-gray-600">React</span>
-												<span className="px-3 py-1 rounded-full bg-gray-100 text-sm text-gray-600">Node.js</span>
-												<span className="px-3 py-1 rounded-full bg-[var(--accent-cyan)]/10 text-[var(--accent-cyan)] text-sm font-medium border border-[var(--accent-cyan)]/20">Open to Work</span>
+												<span className="px-3 py-1 rounded-full bg-gray-100 text-sm text-gray-600">
+													TypeScript
+												</span>
+												<span className="px-3 py-1 rounded-full bg-gray-100 text-sm text-gray-600">
+													React
+												</span>
+												<span className="px-3 py-1 rounded-full bg-gray-100 text-sm text-gray-600">
+													Node.js
+												</span>
+												<span className="px-3 py-1 rounded-full bg-[var(--accent-cyan)]/10 text-[var(--accent-cyan)] text-sm font-medium border border-[var(--accent-cyan)]/20">
+													Open to Work
+												</span>
 											</div>
 										</div>
 										<div className="ml-auto flex gap-2">
@@ -435,20 +612,35 @@ export default function Home() {
 
 									<div className="space-y-8">
 										<div>
-											<h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Recent Highlights</h4>
+											<h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">
+												Recent Highlights
+											</h4>
 											<div className="space-y-4">
 												<div className="group flex gap-4 p-4 rounded-xl hover:bg-gray-50 border border-transparent hover:border-gray-100 transition-all">
 													<div className="mt-1">
 														<CheckCircle2 className="w-5 h-5 text-green-500" />
 													</div>
 													<div>
-														<h5 className="font-bold text-gray-900">Improved Database Query Performance</h5>
+														<h5 className="font-bold text-gray-900">
+															Improved Database
+															Query Performance
+														</h5>
 														<p className="text-gray-600 text-sm leading-relaxed mt-1">
-															Reduced average query latency by 40% (from 200ms to 120ms) by implementing composite indices on the users table.
+															Reduced average
+															query latency by 40%
+															(from 200ms to
+															120ms) by
+															implementing
+															composite indices on
+															the users table.
 														</p>
 														<div className="flex gap-2 mt-2 text-xs text-gray-400 font-mono">
-															<span>#postgres</span>
-															<span>#optimization</span>
+															<span>
+																#postgres
+															</span>
+															<span>
+																#optimization
+															</span>
 														</div>
 													</div>
 												</div>
@@ -457,9 +649,19 @@ export default function Home() {
 														<CheckCircle2 className="w-5 h-5 text-[var(--accent-purple)]" />
 													</div>
 													<div>
-														<h5 className="font-bold text-gray-900">Implemented Dark Mode System</h5>
+														<h5 className="font-bold text-gray-900">
+															Implemented Dark
+															Mode System
+														</h5>
 														<p className="text-gray-600 text-sm leading-relaxed mt-1">
-															Architected a comprehensive theme system using CSS variables and React Context, enabling consistent dark mode across 50+ components.
+															Architected a
+															comprehensive theme
+															system using CSS
+															variables and React
+															Context, enabling
+															consistent dark mode
+															across 50+
+															components.
 														</p>
 													</div>
 												</div>
@@ -469,8 +671,12 @@ export default function Home() {
 
 									{/* Action Button Overlay */}
 									<div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-white via-white/80 to-transparent flex items-end justify-center pb-8">
-										<Link href="/dashboard" className="px-8 py-3 bg-[var(--accent-cyan)] text-white rounded-full font-bold shadow-lg hover:brightness-110 hover:scale-105 transition-all flex items-center gap-2">
-											Claim Your Page <ArrowRight className="w-4 h-4" />
+										<Link
+											href="/dashboard"
+											className="px-8 py-3 bg-[var(--accent-cyan)] text-white rounded-full font-bold shadow-lg hover:brightness-110 hover:scale-105 transition-all flex items-center gap-2"
+										>
+											Claim Your Page{" "}
+											<ArrowRight className="w-4 h-4" />
 										</Link>
 									</div>
 								</div>
@@ -487,27 +693,67 @@ export default function Home() {
 							<div className="grid md:grid-cols-4 gap-12 mb-12">
 								<div className="col-span-1 md:col-span-2">
 									<div className="flex items-center gap-2 font-bold text-xl mb-4">
-										<img src="/enzo.png" alt="Enzo" className="w-8 h-8 rounded-lg" />
+										<img
+											src="/enzo.png"
+											alt="Enzo"
+											className="w-8 h-8 rounded-lg"
+										/>
 										Enzo
 									</div>
 									<p className="text-[var(--text-secondary)] max-w-sm">
-										The AI Career Copilot. Stop writing resumes manually.
-										Start syncing your achievements automatically.
+										The AI Career Copilot. Stop writing
+										resumes manually. Start syncing your
+										achievements automatically.
 									</p>
 								</div>
 								<div>
 									<h4 className="font-bold mb-4">Product</h4>
 									<ul className="space-y-2 text-sm text-[var(--text-secondary)]">
-										<li><a href="#features" className="hover:text-black">Features</a></li>
-										<li><Link href="/dashboard/chat" className="hover:text-black">AI Chat</Link></li>
-										<li><Link href="/login" className="hover:text-black">Log In</Link></li>
+										<li>
+											<a
+												href="#features"
+												className="hover:text-black"
+											>
+												Features
+											</a>
+										</li>
+										<li>
+											<Link
+												href="/dashboard/chat"
+												className="hover:text-black"
+											>
+												AI Chat
+											</Link>
+										</li>
+										<li>
+											<Link
+												href="/login"
+												className="hover:text-black"
+											>
+												Log In
+											</Link>
+										</li>
 									</ul>
 								</div>
 								<div>
 									<h4 className="font-bold mb-4">Legal</h4>
 									<ul className="space-y-2 text-sm text-[var(--text-secondary)]">
-										<li><Link href="/privacy" className="hover:text-black">Privacy Policy</Link></li>
-										<li><Link href="/terms" className="hover:text-black">Terms of Service</Link></li>
+										<li>
+											<Link
+												href="/privacy"
+												className="hover:text-black"
+											>
+												Privacy Policy
+											</Link>
+										</li>
+										<li>
+											<Link
+												href="/terms"
+												className="hover:text-black"
+											>
+												Terms of Service
+											</Link>
+										</li>
 									</ul>
 								</div>
 							</div>
