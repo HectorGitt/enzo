@@ -11,14 +11,14 @@ export interface AIResponse<T> {
 export async function generateHighlightSummary(
 	title: string,
 	rawContent: string,
-	source: string
+	source: string,
 ): Promise<AIResponse<{ title: string; summary: string; tags: string[] }>> {
 	if (!API_KEY) {
 		throw new Error("Missing GEMINI_API_KEY in environment variables.");
 	}
 
 	const genAI = new GoogleGenerativeAI(API_KEY);
-	const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+	const model = genAI.getGenerativeModel({ model: "gemini-3-pro" });
 
 	const prompt = `
     You are an expert technical writer helping a developer track their career achievements.
@@ -84,12 +84,12 @@ export async function generateRepoRefinement(
 	repoName: string,
 	activityContext: string,
 	tone: "professional" | "casual" | "enthusiastic",
-	count: number
+	count: number,
 ): Promise<AIResponse<any[]>> {
 	if (!API_KEY) throw new Error("Missing GEMINI_API_KEY");
 
 	const genAI = new GoogleGenerativeAI(API_KEY);
-	const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+	const model = genAI.getGenerativeModel({ model: "gemini-3-pro" });
 
 	const prompt = `
     You are an expert technical resume writer.
@@ -141,12 +141,12 @@ export async function generateRepoRefinement(
 
 export async function generateBioVariations(
 	activityContext: string,
-	tone: "professional" | "casual" | "enthusiastic"
+	tone: "professional" | "casual" | "enthusiastic",
 ): Promise<AIResponse<string[]>> {
 	if (!API_KEY) throw new Error("Missing GEMINI_API_KEY");
 
 	const genAI = new GoogleGenerativeAI(API_KEY);
-	const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+	const model = genAI.getGenerativeModel({ model: "gemini-3-pro" });
 
 	const prompt = `
     You are an expert technical resume writer.
@@ -193,12 +193,12 @@ export async function generateBioVariations(
 // ... existing code ...
 
 export async function generateResumeJSON(
-	text: string
+	text: string,
 ): Promise<AIResponse<any>> {
 	if (!API_KEY) throw new Error("Missing GEMINI_API_KEY");
 
 	const genAI = new GoogleGenerativeAI(API_KEY);
-	const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); // Use 1.5 Flash for large context window
+	const model = genAI.getGenerativeModel({ model: "gemini-3-pro" }); // Use Gemini 3 Pro for large context window
 
 	const prompt = `
     You are an expert Data Extraction Agent. 
@@ -284,12 +284,12 @@ export interface GenerationConfig {
 export async function generateCustomContent(
 	context: string,
 	type: GenerationType,
-	config: GenerationConfig
+	config: GenerationConfig,
 ): Promise<AIResponse<string>> {
 	if (!API_KEY) throw new Error("Missing GEMINI_API_KEY");
 
 	const genAI = new GoogleGenerativeAI(API_KEY);
-	const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+	const model = genAI.getGenerativeModel({ model: "gemini-3-pro" });
 
 	let promptTemplate = "";
 

@@ -38,7 +38,7 @@ export async function uploadTemplateAction(formData: FormData) {
 
 	const res = await db.query(
 		`INSERT INTO "ResumeTemplate" (name, filename, "userId") VALUES ($1, $2, $3) RETURNING id`,
-		[name, filename, user.id]
+		[name, filename, user.id],
 	);
 
 	return { success: true, id: res.rows[0].id };
@@ -53,7 +53,7 @@ export async function getTemplatesAction() {
 
 	const res = await db.query(
 		'SELECT * FROM "ResumeTemplate" WHERE "userId" = $1 ORDER BY "uploadDate" DESC',
-		[user.id]
+		[user.id],
 	);
 	return res.rows;
 }
@@ -70,7 +70,7 @@ export async function generateResumeAction(templateId: string) {
 	if (templateId) {
 		const tplRes = await db.query(
 			'SELECT * FROM "ResumeTemplate" WHERE id = $1',
-			[templateId]
+			[templateId],
 		);
 		if ((tplRes.rowCount || 0) > 0) {
 			templateFile = tplRes.rows[0].filename;
@@ -143,7 +143,7 @@ export async function parseResumeAction(formData: FormData) {
 		if (!apiKey) throw new Error("GEMINI_API_KEY not configured");
 
 		const genAI = new GoogleGenerativeAI(apiKey);
-		const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+		const model = genAI.getGenerativeModel({ model: "gemini-3-pro" });
 
 		const prompt = `
         You are an expert resume parser. Extract the following information from the resume text below and return ONLY valid JSON.
@@ -173,7 +173,7 @@ export async function parseResumeAction(formData: FormData) {
 			const { deductCreditsAction } = await import("./credits-actions");
 			const payment = await deductCreditsAction(
 				totalTokens,
-				"Resume Parsing"
+				"Resume Parsing",
 			);
 			if (!payment.success) {
 				return {
