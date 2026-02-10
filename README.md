@@ -20,16 +20,16 @@ Enzo is an autonomous professional identity platform. It connects to your engine
 
 ### 2. **AI-Powered Portfolio Updates**
 
-- **Intelligent Code Analysis:** Gemini AI analyzes your codebase structure, frameworks, and technologies.
+- **Intelligent Code Analysis:** Gemini 3 analyzes your codebase structure, frameworks, and technologies.
 - **Automatic Content Generation:** Creates portfolio descriptions, project highlights, and technical summaries.
 - **Framework Detection:** Identifies React, Next.js, Vue, Svelte, Node.js, Python, and other technologies.
 - **Smart Updates:** Updates existing portfolio content instead of overwriting, preserving customizations.
 - **GitHub App Permissions:** Secure repository access with granular permission controls.
 
-### 3. **AI Career Copilot (Agentic RAG)**
+### 3. **AI Career Copilot (Autonomous RAG)**
 
 - **Context-Aware Chat:** Use "Enzo" to query your own professional history (e.g., "What did I work on last December?").
-- **Agentic Tools:** The AI intelligently selects tools to search by date (`search_by_date`), repository (`search_by_repo`), or semantic topic (`search_by_similarity`).
+- **Autonomous Agent Tools:** The AI intelligently selects tools to search by date (`search_by_date`), repository (`search_by_repo`), or semantic topic (`search_by_similarity`).
 - **Resume Context:** The bot has full access to your resume data (Skills, Experience, Education) to provide tailored career advice.
 - **Deep Search:** Retrieves "Raw Activities" (commits/PRs) and "Wins" to answer complex questions about your work.
 - **Source Citations:** Every answer cites the specific data points used.
@@ -37,7 +37,7 @@ Enzo is an autonomous professional identity platform. It connects to your engine
 ### 4. **The Data Studio**
 
 - **Kanban Workflow:** Drag-and-drop workflow to move raw data into your "Highlights".
-- **AI Refinement:** Use **Gemini 2.5 Flash** to rewrite raw commit logs into executive-ready bullet points and generate professional bio variations.
+- **AI Refinement:** Use **Gemini 3** with 1M token context to rewrite raw commit logs into executive-ready bullet points and generate professional bio variations.
 - **Evidence Linking:** Every highlight links back to the original PR or commit diff.
 - **GitHub Explorer:** Browse repositories and generate highlights from specific repos.
 - **Bulk Operations:** Process multiple commits and PRs simultaneously.
@@ -60,7 +60,7 @@ Enzo is an autonomous professional identity platform. It connects to your engine
 - **Length Control:** Generate short, medium, or long content as needed.
 - **Date Filtering:** Filter activities by date range (all time, 1 year, 6 months, or custom).
 - **Token Estimation:** See estimated token usage before generating (input + output + thinking tokens).
-- **Real Token Usage:** Actual Gemini API costs billed to your account.
+- **Real Token Usage:** Actual Gemini 3 API costs billed to your account.
 - **Save to Library:** Store generated content for easy reuse.
 - **Free Tier Limit:** Free users can generate content once; upgrade to Pro for unlimited usage.
 
@@ -80,7 +80,7 @@ Enzo is an autonomous professional identity platform. It connects to your engine
 ### 9. **Credit System & Payments**
 
 - **Pay-As-You-Go (PAYG):** Purchase credits as needed - $2 per 1,000,000 credits.
-- **Token-Based Billing:** 1 token = 1 credit. Charged based on actual Gemini API usage.
+- **Token-Based Billing:** 1 token = 1 credit. Charged based on actual Gemini 3 API usage.
 - **Dodo Payments Integration:** Secure payment processing with webhook verification.
 - **Credit Tracking:** View your current balance and purchase more credits from the dashboard.
 - **Usage Transparency:** See estimated token costs before AI operations and actual usage after.
@@ -285,7 +285,7 @@ For credit purchases to work in production:
 - **Language:** TypeScript
 - **Database:** PostgreSQL (raw SQL via `pg` with connection pooling)
 - **Authentication:** NextAuth.js v5 (GitHub, Google, LinkedIn OAuth)
-- **AI:** Google Gemini 2.5 Flash with real token usage tracking
+- **AI:** Google Gemini 3 with 1M token context for deep reasoning and real token usage tracking
 - **Payments:** Dodo Payments SDK with webhook verification
 - **Styling:** Tailwind CSS
 - **PDF Generation:** React-PDF with custom components
