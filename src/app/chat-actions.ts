@@ -76,7 +76,7 @@ export async function chatWithDataAction(
 	// 3. Initialize Gemini with Tools
 	const genAI = new GoogleGenerativeAI(API_KEY);
 	const model = genAI.getGenerativeModel({
-		model: "gemini-3-pro",
+		model: "gemini-2.5-flash",
 		tools: [
 			{
 				functionDeclarations: [

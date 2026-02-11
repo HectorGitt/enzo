@@ -13,10 +13,10 @@ export default async function DashboardPage() {
 	const session = await auth();
 
 	// Check if user needs onboarding (new user or hasn't completed onboarding)
-	const needsOnboarding = !profile.onboardingCompleted && (
+	const needsOnboarding =
+		!profile.onboardingCompleted &&
 		(profile.experience?.length || 0) === 0 &&
-		(profile.wins?.length || 0) === 0
-	);
+		(profile.wins?.length || 0) === 0;
 
 	if (needsOnboarding) {
 		return <OnboardingWizard session={session} />;
@@ -47,7 +47,7 @@ export default async function DashboardPage() {
 					<p className="text-4xl font-bold text-[var(--accent-purple)]">
 						{
 							(profile.wins || []).filter(
-								(w) => w.status === "pending"
+								(w) => w.status === "pending",
 							).length
 						}
 					</p>

@@ -143,7 +143,7 @@ export async function parseResumeAction(formData: FormData) {
 		if (!apiKey) throw new Error("GEMINI_API_KEY not configured");
 
 		const genAI = new GoogleGenerativeAI(apiKey);
-		const model = genAI.getGenerativeModel({ model: "gemini-3-pro" });
+		const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 		const prompt = `
         You are an expert resume parser. Extract the following information from the resume text below and return ONLY valid JSON.

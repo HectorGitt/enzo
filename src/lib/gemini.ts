@@ -18,7 +18,7 @@ export async function generateHighlightSummary(
 	}
 
 	const genAI = new GoogleGenerativeAI(API_KEY);
-	const model = genAI.getGenerativeModel({ model: "gemini-3-pro" });
+	const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 	const prompt = `
     You are an expert technical writer helping a developer track their career achievements.
@@ -89,7 +89,7 @@ export async function generateRepoRefinement(
 	if (!API_KEY) throw new Error("Missing GEMINI_API_KEY");
 
 	const genAI = new GoogleGenerativeAI(API_KEY);
-	const model = genAI.getGenerativeModel({ model: "gemini-3-pro" });
+	const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 	const prompt = `
     You are an expert technical resume writer.
@@ -146,7 +146,7 @@ export async function generateBioVariations(
 	if (!API_KEY) throw new Error("Missing GEMINI_API_KEY");
 
 	const genAI = new GoogleGenerativeAI(API_KEY);
-	const model = genAI.getGenerativeModel({ model: "gemini-3-pro" });
+	const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 	const prompt = `
     You are an expert technical resume writer.
@@ -198,7 +198,7 @@ export async function generateResumeJSON(
 	if (!API_KEY) throw new Error("Missing GEMINI_API_KEY");
 
 	const genAI = new GoogleGenerativeAI(API_KEY);
-	const model = genAI.getGenerativeModel({ model: "gemini-3-pro" }); // Use Gemini 3 Pro for large context window
+	const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); // Use 1.5 Flash for large context window
 
 	const prompt = `
     You are an expert Data Extraction Agent. 
@@ -289,7 +289,7 @@ export async function generateCustomContent(
 	if (!API_KEY) throw new Error("Missing GEMINI_API_KEY");
 
 	const genAI = new GoogleGenerativeAI(API_KEY);
-	const model = genAI.getGenerativeModel({ model: "gemini-3-pro" });
+	const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 	let promptTemplate = "";
 
