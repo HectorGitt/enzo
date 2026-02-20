@@ -364,7 +364,7 @@ export async function generateEmbedding(text: string): Promise<number[]> {
 	if (!API_KEY) throw new Error("Missing GEMINI_API_KEY");
 
 	const genAI = new GoogleGenerativeAI(API_KEY);
-	const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
+	const model = genAI.getGenerativeModel({ model: "gemini-embedding-001" });
 
 	try {
 		const result = await model.embedContent(text);
