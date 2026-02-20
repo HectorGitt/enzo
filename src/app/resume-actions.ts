@@ -25,7 +25,7 @@ export async function uploadTemplateAction(formData: FormData) {
 	// Ensure dir exists
 	try {
 		await fs.mkdir(TEMPLATES_DIR, { recursive: true });
-	} catch {}
+	} catch { }
 
 	const filename = `${Date.now()}-${file.name.replace(/\s+/g, "_")}`;
 	const filepath = path.join(TEMPLATES_DIR, filename);
@@ -132,9 +132,12 @@ export async function parseResumeAction(formData: FormData) {
 	try {
 		const buffer = Buffer.from(await file.arrayBuffer());
 
-		// Import pdf-parse/lib/pdf-parse directly to avoid test file loading issue
+
+		// Import pdf-parse using standard package name
+		// Note: pdf-parse might need `// @ts-ignore` if types are missing, 
+		// but we should avoid deep linking into /lib/ unless guaranteed.
 		// @ts-ignore
-		const pdfParse = (await import("pdf-parse/lib/pdf-parse")).default;
+		const pdfParse = (await import("pdf-parse")).default;
 		const pdfData = await pdfParse(buffer);
 		const text = pdfData.text;
 
